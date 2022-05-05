@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.cell {
+  height: 50px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.cell:active {
+  background-color: gray;
+}
