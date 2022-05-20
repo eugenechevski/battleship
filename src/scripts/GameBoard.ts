@@ -1,127 +1,173 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-undef */
 import Ship from './Ship';
 
-export default function (): GameBoard {
-  let grid: Grid | undefined;
+export default function () {
+  const tableName: { [shipName: string]: string } = {
+    'Aircraft Carrier': 'AC',
+    Battleship: 'BS',
+    Cruiser: 'CR',
+    'Destroyer 0': 'D0',
+    'Destroyer 1': 'D1',
+    'Submarine 0': 'S0',
+    'Submarine 1': 'S1',
+  };
+  // Player's view of his board
+  const grid: Grid = createGrid();
+  const gridView: string[][] = createGridView();
   // Internal view of the enemy's board
-  let enemyGrid: Grid | undefined;
-  // Storage for valid possible moves
-  // { 0: 0, 1: 1, 2: 2, ..., 99 }
-  let validEnemyCells: { [index: number]: number };
-  let destroyedShips: number;
+  const possibleAttacksOnEnemyGrid = createPossibleAttacksSet();
+  // Storage for valid possible attacks
+  const enemyGridMap = createMapOfEnemyGrid();
+  // The count of the player's destroyed ships
+  let numberOfShipsAlive = 7;
   // Storage for coordinates of the last successful attack
-  let notFinished:
-    | {
-        coords: Coordinate[]; // store the first and/or the last coordinate of the last hit ship
-      }
-    | undefined;
+  let notFinished: Coordinate[] = [];
 
   function areSunk(): boolean {
-    return destroyedShips === 0;
+    return numberOfShipsAlive === 0;
   }
 
-  /*
-    Populates the grid with either ship objects or boolean values where 'false' means
-    the cell was not hit before.
-  */
-  function initGrid(): void {
-    const aircraftCarrier: Ship = Ship(5);
-    const battleship: Ship = Ship(4);
-    const cruiser: Ship = Ship(3);
-    const destroyers: Ship[] = [Ship(2), Ship(2)];
-    const subMarines: Ship[] = [Ship(1), Ship(1)];
-
-    grid = [
-      [false, false, false, false, false, false, false, false, false, false],
-      [
-        false,
-        [aircraftCarrier, false],
-        false,
-        [battleship, false],
-        [battleship, false],
-        [battleship, false],
-        [battleship, false],
-        false,
-        false,
-        false,
-      ],
-      [false, [aircraftCarrier, false], false, false, false, false, false, false, false, false],
-      [
-        false,
-        [aircraftCarrier, false],
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        [cruiser, false],
-        false,
-      ],
-      [
-        false,
-        [aircraftCarrier, false],
-        false,
-        [destroyers[0], false],
-        [destroyers[0], false],
-        false,
-        [destroyers[1], false],
-        false,
-        [cruiser, false],
-        false,
-      ],
-      [
-        false,
-        [aircraftCarrier, false],
-        false,
-        false,
-        false,
-        false,
-        [destroyers[1], false],
-        false,
-        [cruiser, false],
-        false,
-      ],
-      [false, false, false, false, false, false, false, false, false, false],
-      [false, false, false, [subMarines[0], false], false, false, false, false, false, false],
-      [false, false, false, false, false, [subMarines[1], false], false, false, false, false],
-      [false, false, false, false, false, false, false, false, false, false],
-    ];
+  function getNumberOfShipsAlive(): number {
+    return numberOfShipsAlive;
   }
 
-  /*
-    Populates the internal view of the enemy's board with boolean values
-    'false' means the cell was not hit before.
-  */
-  function initEnemyGrid() {
-    enemyGrid = [];
-    validEnemyCells = {};
-    for (let i = 0; i < 10; i += 1) {
-      enemyGrid.push([]);
-      for (let j = 0; j < 10; j += 1) {
-        enemyGrid[i].push(false);
-        validEnemyCells[i * 10 + j] = j;
+  function getGrid(): Grid {
+    return grid;
+  }
+
+  function createGridView(): string[][] {
+    const output: string[][] = [];
+    for (let row = 0; row < 10; row += 1) {
+      output.push([]);
+      for (let col = 0; col < 10; col += 1) {
+        if (typeof grid[row][col] === 'boolean') {
+          output[row].push('.');
+        } else {
+          const ship = <Ship>grid[row][col];
+          output[row].push(tableName[ship.getName()]);
+        }
       }
     }
-    notFinished = undefined;
+
+    return output;
   }
 
-  function receiveAttack(coord: Coordinate): ShotResult {
-    let result: ShotResult;
+  function getGridView(): string[][] {
+    return gridView;
+  }
 
-    if (grid[coord[0]][coord[1]] === true) {
+  function getEnemyGridMap(): { [index: number]: boolean | Ship } {
+    return enemyGridMap;
+  }
+
+  /**
+   * The function produces a new copy of the array that serves as the internal grid
+   * of the player's board. It populates the array with ships and boolean's 'true' value
+   * where 'true' means the cell was not hit before.
+   * @returns populated grid
+   */
+  function createGrid(): Grid {
+    const ships: { [index: string]: Ship } = {
+      AC: Ship('Aircraft Carrier', 5),
+      BS: Ship('Battleship', 4),
+      CR: Ship('Cruiser', 3),
+      D0: Ship('Destroyer 0', 2),
+      D1: Ship('Destroyer 1', 2),
+      S0: Ship('Submarine 0', 1),
+      S1: Ship('Submarine 1', 1),
+    };
+
+    const nameMap = [
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', 'AC', '.', 'BS', 'BS', 'BS', 'BS', '.', '.', '.'],
+      ['.', 'AC', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', 'AC', '.', '.', '.', '.', '.', '.', 'CR', '.'],
+      ['.', 'AC', '.', 'D0', 'D0', '.', 'D1', '.', 'CR', '.'],
+      ['.', 'AC', '.', '.', '.', '.', 'D1', '.', 'CR', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', 'S0', '.', '.', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', 'S1', '.', '.', '.', '.'],
+      ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
+    ];
+
+    const outputGrid: Grid = [];
+    for (let row = 0; row < 10; row += 1) {
+      outputGrid.push([]);
+      for (let col = 0; col < 10; col += 1) {
+        if (nameMap[row][col] === '.') {
+          outputGrid[row].push(true);
+        } else {
+          const ship = ships[nameMap[row][col]];
+          ship.addCoordinate(<Coordinate>[row, col]);
+          outputGrid[row].push(ship);
+        }
+      }
+    }
+
+    return outputGrid;
+  }
+
+  /**
+   * TODO
+   */
+  function createPossibleAttacksSet(): Set<number> {
+    const possibleAttacks = new Set<number>();
+    for (let row = 0; row < 10; row += 1) {
+      for (let col = 0; col < 10; col += 1) {
+        possibleAttacks.add(row * 10 + col);
+      }
+    }
+
+    return possibleAttacks;
+  }
+
+  /**
+   * Creates an object that serves as a hash-map for storing valid possible moves
+   * that can be produced by the function 'generateAttack'. The map is used only if
+   * the 'Player' object has the 'true' value of 'isRobot' property.
+   * @returns set of numbers from 0 - 99
+   */
+  function createMapOfEnemyGrid(): { [index: number]: boolean | Ship } {
+    const enemyMap: { [index: number]: boolean | Ship } = {};
+    for (let row = 0; row < 10; row += 1) {
+      for (let col = 0; col < 10; col += 1) {
+        enemyMap[row * 10 + col] = true;
+      }
+    }
+
+    return enemyMap;
+  }
+
+  /**
+   * The function receives the coordinates of an attack produced by the enemy
+   * and determines the outcome.
+   *
+   * @param coord - target coordinates
+   * @returns - the result of the attack
+   */
+  function receiveAttack(coord: Coordinate): string {
+    updateGridView(coord);
+
+    let result;
+    const row = coord[0];
+    const col = coord[1];
+
+    // The enemy missed
+    if (grid[row][col] === true) {
       result = 'MISSED';
-      grid[coord[0]][coord[1]] = false;
-    } else if (
-      typeof grid[coord[0]][coord[1]] !== 'boolean'
-      && grid[coord[0]][coord[1]][1] === true
-    ) {
-      result = 'HIT';
-      grid[coord[0]][coord[1]][0].hit();
-      grid[coord[0]][coord[1]][1] = false;
-      destroyedShips -= grid[coord[0]][coord[1]][0].isSunk() ? 1 : 0;
+      grid[row][col] = false;
+      // The enemy hit a ship's coordinate for the first time
+    } else if (typeof grid[row][col] !== 'boolean' && (<Ship>grid[row][col]).hit(coord)) {
+      if ((<Ship>grid[row][col]).isSunk()) {
+        numberOfShipsAlive -= 1;
+        result = 'SUNK';
+      } else {
+        result = 'HIT';
+      }
+      // The enemy attacked the same ship's coordinate that he attacked before
     } else {
       result = 'DOUBLE-SHOT';
     }
@@ -137,14 +183,9 @@ export default function (): GameBoard {
     const row = move[0];
     const col = move[1];
 
-    const topLeft = (row - 1) * 10 + col - 1;
     const topMiddle = (row - 1) * 10 + col;
-    const topRight = (row - 1) * 10 + col + 1;
 
-    return (
-      row === 0
-      || (topLeft in validEnemyCells && topMiddle in validEnemyCells && topRight in validEnemyCells)
-    );
+    return (row === 0 && enemyGridMap[col] === true) || enemyGridMap[topMiddle] === true;
   }
 
   /**
@@ -155,15 +196,10 @@ export default function (): GameBoard {
     const row = move[0];
     const col = move[1];
 
-    const bottomLeft = (row + 1) * 10 + col - 1;
     const bottomMiddle = (row + 1) * 10 + col;
-    const bottomRight = (row + 1) * 10 + col + 1;
 
     return (
-      row === 9
-      || (bottomLeft in validEnemyCells
-        && bottomMiddle in validEnemyCells
-        && bottomRight in validEnemyCells)
+      (row === 9 && enemyGridMap[row * 10 + col] === true) || enemyGridMap[bottomMiddle] === true
     );
   }
 
@@ -175,16 +211,9 @@ export default function (): GameBoard {
     const row = move[0];
     const col = move[1];
 
-    const leftTop = (row - 1) * 10 + col - 1;
     const leftMiddle = row * 10 + col - 1;
-    const leftBottom = (row + 1) * 10 + col + 1;
 
-    return (
-      col === 0
-      || (leftTop in validEnemyCells
-      && leftMiddle in validEnemyCells
-      && leftBottom in validEnemyCells)
-    );
+    return (col === 0 && enemyGridMap[row * 10] === true) || enemyGridMap[leftMiddle] === true;
   }
 
   /**
@@ -195,97 +224,200 @@ export default function (): GameBoard {
     const row = move[0];
     const col = move[1];
 
-    const rightTop = (row - 1) * 10 + col + 1;
     const rightMiddle = row * 10 + col + 1;
-    const rightBottom = (row + 1) * 10 + col + 1;
 
     return (
-      col === 9
-      || (rightTop in validEnemyCells
-        && rightMiddle in validEnemyCells
-        && rightBottom in validEnemyCells)
+      (col === 9 && enemyGridMap[row * 10 + col] === true) || enemyGridMap[rightMiddle] === true
     );
   }
 
   /**
    * Chooses a move randomly from given moves or from the known valid cells.
-   * @param moves - moves to choose from
+   * @param attacks - moves to choose from
    */
-  function pickRandomMove(moves?: Coordinate[]): Coordinate {
-    let move: Coordinate;
+  function pickRandomMove(attacks?: Coordinate[]): Coordinate {
+    let move: Coordinate | undefined;
 
-    if (moves !== undefined) {
-      move = moves[Math.floor(Math.random() * moves.length)];
+    if (attacks !== undefined) {
+      move = attacks[Math.floor(Math.random() * attacks.length)];
     } else {
-      // Obtain all valid cells to shoot
-      const validCells = Object.keys(validEnemyCells);
-      // Pick a random number from those cells in one-dimensional format
-      const oneD = Number(validCells[Math.floor(Math.random() * validCells.length)]);
-      // Derive the row and the column
-      const row = Math.floor(oneD / 10);
-      const col = Math.floor(oneD % 10);
-      // Pack it up
+      const possibleAttacks = [...possibleAttacksOnEnemyGrid.keys()];
+      const randomAttack = possibleAttacks[Math.floor(Math.random() * possibleAttacks.length)];
+      const row = Math.floor(Math.floor(randomAttack / 10));
+      const col = Math.floor(randomAttack % 10);
+
       move = [row, col];
     }
 
-    return move;
+    return <Coordinate>move;
+  }
+
+  function updateNotFinished(newValue: Coordinate[]): void {
+    notFinished = newValue;
+  }
+
+  function getNotFinished(): Coordinate[] {
+    return notFinished;
+  }
+
+  function updateGridView(attack: Coordinate): void {
+    const row = attack[0];
+    const col = attack[1];
+
+    gridView[row][col] = 'X';
   }
 
   /**
-   * Updates the map of potential valid moves of the enemy grid after a ship was hit.
-   * @param move - last move
+   * Updates the map of potentially valid attacks that can be produced on the enemy's board
+   * after the last attack has hit ship or missed.
+   * @param attack - last attack
    */
-  function updateValidMoves(move: Coordinate): void {
-    const row = move[0];
-    const col = move[1];
+  function markEnemyGridCellAsMissed(attack: Coordinate): void {
+    const row = attack[0];
+    const col = attack[1];
 
-    // | ? |   |   |
-    // |   | x |   |
+    const keyAttack = row * 10 + col;
+    if (keyAttack in enemyGridMap) {
+      enemyGridMap[keyAttack] = false;
+      possibleAttacksOnEnemyGrid.delete(keyAttack);
+    }
+  }
+
+  function markEnemyGridCellAsHit(attack: Coordinate, enemyShip: Ship): void {
+    const row = attack[0];
+    const col = attack[1];
+
+    const keyAttack = row * 10 + col;
+    if (keyAttack in enemyGridMap) {
+      enemyGridMap[keyAttack] = enemyShip;
+      possibleAttacksOnEnemyGrid.delete(keyAttack);
+    }
+  }
+
+  /**
+   * Updates the map of potentially valid attacks that can be produced on the enemy's board
+   * after the last attack has sunk a ship. It removes all potential attacks around that ship.
+   * @param attack - last attack
+   */
+  function markEnemyGridCellsAroundShipAsMissed(shipCoords: Coordinate[]): void {
+    const firstCoord = shipCoords[0];
+    const lastCoord = shipCoords.slice(-1)[0];
+
+    // Horizontal
+    if (firstCoord[0] - lastCoord[0] === 0) {
+      markThreeCellsBeforeColumnAsMissed(firstCoord);
+
+      const row = firstCoord[0];
+      for (let COL = firstCoord[1]; COL <= lastCoord[1]; COL += 1) {
+        markEnemyGridCellAsMissed([row - 1, COL]);
+        markEnemyGridCellAsMissed([row + 1, COL]);
+      }
+
+      markThreeCellsAfterColumnAsMissed(lastCoord);
+    } else {
+      // Vertical
+      markThreeCellsBeforeRowAsMissed(firstCoord);
+
+      const col = firstCoord[1];
+      for (let ROW = firstCoord[0]; ROW <= lastCoord[0]; ROW += 1) {
+        markEnemyGridCellAsMissed([ROW, col - 1]);
+        markEnemyGridCellAsMissed([ROW, col + 1]);
+      }
+
+      markThreeCellsAfterRowAsMissed(lastCoord);
+    }
+  }
+
+  function markThreeCellsBeforeColumnAsMissed(coord: Coordinate): void {
+    // Mark 3 cells before as 'false'
+    const row = coord[0];
+    const col = coord[1];
+
+    const leftTop = (row - 1) * 10 + col - 1;
+    if (leftTop in enemyGridMap) {
+      enemyGridMap[leftTop] = false;
+      possibleAttacksOnEnemyGrid.delete(leftTop);
+    }
+
+    const leftMiddle = row * 10 + col - 1;
+    if (leftMiddle in enemyGridMap) {
+      enemyGridMap[leftMiddle] = false;
+      possibleAttacksOnEnemyGrid.delete(leftMiddle);
+    }
+
+    const leftBottom = (row + 1) * 10 + col - 1;
+    if (leftBottom in enemyGridMap) {
+      enemyGridMap[leftBottom] = false;
+      possibleAttacksOnEnemyGrid.delete(leftBottom);
+    }
+  }
+
+  function markThreeCellsAfterColumnAsMissed(coord: Coordinate): void {
+    const row = coord[0];
+    const col = coord[1];
+
+    const rightTop = (row + 1) * 10 + col + 1;
+    if (rightTop in enemyGridMap) {
+      enemyGridMap[rightTop] = false;
+      possibleAttacksOnEnemyGrid.delete(rightTop);
+    }
+
+    const rightMiddle = row * 10 + col + 1;
+    if (rightMiddle in enemyGridMap) {
+      enemyGridMap[rightMiddle] = false;
+      possibleAttacksOnEnemyGrid.delete(rightMiddle);
+    }
+
+    const rightBottom = (row + 1) * 10 + col + 1;
+    if (rightBottom in enemyGridMap) {
+      enemyGridMap[rightBottom] = false;
+      possibleAttacksOnEnemyGrid.delete(rightBottom);
+    }
+  }
+
+  function markThreeCellsBeforeRowAsMissed(coord: Coordinate): void {
+    const row = coord[0];
+    const col = coord[1];
+
     const topLeft = (row - 1) * 10 + col - 1;
-    if (topLeft in validEnemyCells) {
-      delete validEnemyCells[topLeft];
+    if (topLeft in enemyGridMap) {
+      enemyGridMap[topLeft] = false;
+      possibleAttacksOnEnemyGrid.delete(topLeft);
     }
-    // |   | ? |   |
-    // |   | x |   |
+
     const topMiddle = (row - 1) * 10 + col;
-    if (topMiddle in validEnemyCells) {
-      delete validEnemyCells[topMiddle];
+    if (topMiddle in enemyGridMap) {
+      enemyGridMap[topMiddle] = false;
+      possibleAttacksOnEnemyGrid.delete(topMiddle);
     }
-    // |   |   | ? |
-    // |   | x |   |
+
     const topRight = (row - 1) * 10 + col + 1;
-    if (topRight in validEnemyCells) {
-      delete validEnemyCells[topRight];
+    if (topRight in enemyGridMap) {
+      enemyGridMap[topRight] = false;
+      possibleAttacksOnEnemyGrid.delete(topRight);
     }
-    // ? | x |   |
-    const left = row * 10 + col - 1;
-    if (left in validEnemyCells) {
-      delete validEnemyCells[left];
-    }
-    //  | x | ? |
-    const right = row * 10 + col + 1;
-    if (right in validEnemyCells) {
-      delete validEnemyCells[right];
-    }
-    //   | x |   |
-    // ? |   |   |
+  }
+
+  function markThreeCellsAfterRowAsMissed(coord: Coordinate): void {
+    const row = coord[0];
+    const col = coord[1];
+
     const bottomLeft = (row + 1) * 10 + col - 1;
-    if (bottomLeft in validEnemyCells) {
-      delete validEnemyCells[bottomLeft];
+    if (bottomLeft in enemyGridMap) {
+      enemyGridMap[bottomLeft] = false;
+      possibleAttacksOnEnemyGrid.delete(bottomLeft);
     }
 
-    //   | x |   |
-    //   | ? |   |
     const bottomMiddle = (row + 1) * 10 + col;
-    if (bottomMiddle in validEnemyCells) {
-      delete validEnemyCells[bottomMiddle];
+    if (bottomMiddle in enemyGridMap) {
+      enemyGridMap[bottomMiddle] = false;
+      possibleAttacksOnEnemyGrid.delete(bottomMiddle);
     }
 
-    //   | x |   |
-    //   |   | ? |
     const bottomRight = (row + 1) * 10 + col + 1;
-    if (bottomRight in validEnemyCells) {
-      delete validEnemyCells[bottomRight];
+    if (bottomRight in enemyGridMap) {
+      enemyGridMap[bottomRight] = false;
+      possibleAttacksOnEnemyGrid.delete(bottomRight);
     }
   }
 
@@ -304,16 +436,16 @@ export default function (): GameBoard {
    * in this case, we need to determine the orientation of non-finished ship and pick a valid move.
    */
   function generateAttack(): Coordinate {
-    let move: Coordinate | undefined;
+    let move;
 
     // The first case
-    if (notFinished.coords === undefined) {
+    if (notFinished.length === 0) {
       move = pickRandomMove();
     }
 
     // The second case
-    if (notFinished.coords !== undefined && notFinished.coords.length === 1) {
-      const lastMove = notFinished.coords[0];
+    if (notFinished.length === 1) {
+      const lastMove = notFinished[0];
       const potentialMoves = [];
 
       const top: Coordinate = [lastMove[0] - 1, lastMove[1]];
@@ -340,14 +472,14 @@ export default function (): GameBoard {
     }
 
     // The third case
-    if (notFinished.coords.length === 2) {
+    if (notFinished.length === 2) {
       const potentialMoves = [];
-      const firstMove = notFinished.coords[0];
-      const lastMove = notFinished.coords[1];
+      const firstMove = notFinished[0];
+      const lastMove = notFinished[1];
 
       // Vertical possible moves
-      let top: Coordinate | undefined;
-      let bottom: Coordinate | undefined;
+      let top;
+      let bottom;
 
       // The last move is lower than the first move
       if (lastMove[0] - firstMove[0] > 0) {
@@ -370,8 +502,8 @@ export default function (): GameBoard {
       }
 
       // Horizontal possible moves
-      let left: Coordinate | undefined;
-      let right: Coordinate | undefined;
+      let left;
+      let right;
 
       // The last move is more right than the first move
       if (lastMove[1] - firstMove[1] > 0) {
@@ -400,13 +532,24 @@ export default function (): GameBoard {
   }
 
   return {
+    possibleAttacksOnEnemyGrid,
     receiveAttack,
     generateAttack,
     areSunk,
-    initGrid,
-    initEnemyGrid,
-    grid,
-    enemyGrid,
-    notFinished,
+    isValidTop,
+    isValidBottom,
+    isValidLeft,
+    isValidRight,
+    markEnemyGridCellsAroundShipAsMissed,
+    markEnemyGridCellAsMissed,
+    markEnemyGridCellAsHit,
+    pickRandomMove,
+    getNumberOfShipsAlive,
+    getGrid,
+    getGridView,
+    getNotFinished,
+    getEnemyGridMap,
+    updateGridView,
+    updateNotFinished,
   };
 }
