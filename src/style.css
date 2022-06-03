@@ -3,11 +3,16 @@
 @tailwind utilities;
 
 .cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 50px;
-  cursor: pointer;
-  text-align: center;
 }
 
-.cell:active {
+.cell.clicked {
+  cursor: pointer;
+}
+
+.cell.clicked:active {
   background-color: gray;
 }

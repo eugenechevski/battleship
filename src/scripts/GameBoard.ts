@@ -243,7 +243,7 @@ export default function () {
     } else {
       const possibleAttacks = [...possibleAttacksOnEnemyGrid.keys()];
       const randomAttack = possibleAttacks[Math.floor(Math.random() * possibleAttacks.length)];
-      const row = Math.floor(Math.floor(randomAttack / 10));
+      const row = Math.floor(randomAttack / 10);
       const col = Math.floor(randomAttack % 10);
 
       move = [row, col];
@@ -421,6 +421,85 @@ export default function () {
     }
   }
 
+  function generateForTheFirstCase(): Coordinate {
+    return pickRandomMove();
+  }
+
+  function generateForTheSecondCase(): Coordinate {
+    const lastMove = notFinished[0];
+    const potentialMoves = [];
+
+    const top: Coordinate = [lastMove[0] - 1, lastMove[1]];
+    if (isValidTop(top)) {
+      potentialMoves.push(top);
+    }
+
+    const bottom: Coordinate = [lastMove[0] + 1, lastMove[1]];
+    if (isValidBottom(bottom)) {
+      potentialMoves.push(bottom);
+    }
+
+    const left: Coordinate = [lastMove[0], lastMove[1] - 1];
+    if (isValidLeft(left)) {
+      potentialMoves.push(left);
+    }
+
+    const right: Coordinate = [lastMove[0], lastMove[1] + 1];
+    if (isValidRight(right)) {
+      potentialMoves.push(right);
+    }
+
+    return pickRandomMove(potentialMoves);
+  }
+
+  function generateForTheThirdCase(): Coordinate {
+    const potentialMoves = [];
+    const firstMove = notFinished[0];
+    const lastMove = notFinished[1];
+
+    // Horizontal possible moves
+    if (firstMove[0] === lastMove[0]) {
+      // The last move is more left than the first move
+      let right: Coordinate = [firstMove[0], firstMove[1] + 1];
+      let left: Coordinate = [lastMove[0], lastMove[1] - 1];
+
+      // The last move is more right than the first move
+      if (lastMove[1] - firstMove[1] > 0) {
+        right = [lastMove[0], lastMove[1] + 1];
+        left = [firstMove[0], firstMove[1] - 1];
+      }
+
+      if (isValidLeft(left)) {
+        potentialMoves.push(left);
+      }
+
+      if (isValidRight(right)) {
+        potentialMoves.push(right);
+      }
+      // Vertical possible moves
+    } else if (firstMove[1] === lastMove[1]) {
+      // The last move is higher than the first move
+      let top: Coordinate = [lastMove[0] - 1, lastMove[1]];
+      let bottom: Coordinate = [firstMove[0] + 1, firstMove[1]];
+
+      // The last move is lower than the first move
+      if (lastMove[0] - firstMove[0] > 0) {
+        top = [firstMove[0] - 1, firstMove[1]];
+        bottom = [lastMove[0] + 1, lastMove[1]];
+      }
+
+      if (isValidTop(top)) {
+        potentialMoves.push(top);
+      }
+
+      if (isValidBottom(bottom)) {
+        potentialMoves.push(bottom);
+      }
+    }
+
+    return pickRandomMove(<Coordinate[]>potentialMoves);
+  }
+
   /**
    * Generates a valid attack based on the current state of the enemy's board.
    * It uses the internal view of the enemy's board to determine a valid move, and
@@ -436,99 +515,12 @@ export default function () {
    * in this case, we need to determine the orientation of non-finished ship and pick a valid move.
    */
   function generateAttack(): Coordinate {
-    let move;
-
-    // The first case
-    if (notFinished.length === 0) {
-      move = pickRandomMove();
-    }
-
-    // The second case
-    if (notFinished.length === 1) {
-      const lastMove = notFinished[0];
-      const potentialMoves = [];
-
-      const top: Coordinate = [lastMove[0] - 1, lastMove[1]];
-      if (isValidTop(top)) {
-        potentialMoves.push(top);
-      }
-
-      const bottom: Coordinate = [lastMove[0] + 1, lastMove[1]];
-      if (isValidBottom(bottom)) {
-        potentialMoves.push(bottom);
-      }
-
-      const left: Coordinate = [lastMove[0], lastMove[1] - 1];
-      if (isValidLeft(left)) {
-        potentialMoves.push(left);
-      }
-
-      const right: Coordinate = [lastMove[0], lastMove[1] + 1];
-      if (isValidRight(right)) {
-        potentialMoves.push(right);
-      }
-
-      move = pickRandomMove(potentialMoves);
-    }
-
-    // The third case
-    if (notFinished.length === 2) {
-      const potentialMoves = [];
-      const firstMove = notFinished[0];
-      const lastMove = notFinished[1];
-
-      // Vertical possible moves
-      let top;
-      let bottom;
-
-      // The last move is lower than the first move
-      if (lastMove[0] - firstMove[0] > 0) {
-        top = [firstMove[0] - 1, firstMove[1]];
-        bottom = [lastMove[0] + 1, lastMove[1]];
-      }
-
-      // The last move is higher than the first move
-      if (lastMove[0] - firstMove[0] < 0) {
-        top = [lastMove[0] - 1, lastMove[1]];
-        bottom = [firstMove[0] + 1, firstMove[1]];
-      }
-
-      if (isValidTop(<Coordinate>top)) {
-        potentialMoves.push(top);
-      }
-
-      if (isValidBottom(<Coordinate>bottom)) {
-        potentialMoves.push(top);
-      }
-
-      // Horizontal possible moves
-      let left;
-      let right;
-
-      // The last move is more right than the first move
-      if (lastMove[1] - firstMove[1] > 0) {
-        right = [lastMove[0], lastMove[1] + 1];
-        left = [firstMove[0], firstMove[1] - 1];
-      }
-
-      // The last move is more left than the first move
-      if (lastMove[1] - firstMove[1] < 0) {
-        right = [firstMove[0], firstMove[1] + 1];
-        left = [lastMove[0], lastMove[1] - 1];
-      }
-
-      if (isValidLeft(<Coordinate>left)) {
-        potentialMoves.push(left);
-      }
-
-      if (isValidRight(<Coordinate>right)) {
-        potentialMoves.push(right);
-      }
-
-      move = pickRandomMove(<Coordinate[]>potentialMoves);
-    }
-
-    return <Coordinate>move;
+    // eslint-disable-next-line no-nested-ternary
+    return notFinished.length === 0
+      ? generateForTheFirstCase()
+      : notFinished.length === 1
+        ? generateForTheSecondCase()
+        : generateForTheThirdCase();
   }
 
   return {

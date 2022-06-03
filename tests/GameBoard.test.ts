@@ -114,11 +114,77 @@ test('Validating possible attacks at the bottom', () => {
 });
 
 test('Validating possible attacks at the left', () => {
-  // TODO
+  const board = GameBoard();
+
+  expect(board.isValidLeft([0, 0])).toBeTruthy();
+  expect(board.isValidLeft([9, 0])).toBeTruthy();
+
+  const enemyBoard = GameBoard();
+  const ship = <Ship>enemyBoard.getGrid()[1][1];
+
+  board.markEnemyGridCellAsHit([1, 1], ship);
+  board.markEnemyGridCellAsHit([2, 1], ship);
+  board.markEnemyGridCellAsHit([3, 1], ship);
+  board.markEnemyGridCellAsHit([4, 1], ship);
+  board.markEnemyGridCellAsHit([5, 1], ship);
+  board.markEnemyGridCellsAroundShipAsMissed(ship.getArrayCoordinates());
+
+  expect(board.isValidLeft([0, 1])).toBeFalsy();
+  expect(board.isValidLeft([1, 1])).toBeFalsy();
+  expect(board.isValidLeft([2, 1])).toBeFalsy();
+  expect(board.isValidLeft([3, 1])).toBeFalsy();
+  expect(board.isValidLeft([4, 1])).toBeFalsy();
+  expect(board.isValidLeft([5, 1])).toBeFalsy();
+  expect(board.isValidLeft([6, 1])).toBeFalsy();
+
+  expect(board.isValidLeft([0, 2])).toBeFalsy();
+  expect(board.isValidLeft([1, 2])).toBeFalsy();
+  expect(board.isValidLeft([2, 2])).toBeFalsy();
+  expect(board.isValidLeft([3, 2])).toBeFalsy();
+  expect(board.isValidLeft([4, 2])).toBeFalsy();
+  expect(board.isValidLeft([5, 2])).toBeFalsy();
+  expect(board.isValidLeft([6, 2])).toBeFalsy();
+
+  expect(board.isValidLeft([0, 3])).toBeFalsy();
+  expect(board.isValidLeft([1, 3])).toBeFalsy();
+  expect(board.isValidLeft([2, 3])).toBeFalsy();
+  expect(board.isValidLeft([3, 3])).toBeFalsy();
+  expect(board.isValidLeft([4, 3])).toBeFalsy();
+  expect(board.isValidLeft([5, 3])).toBeFalsy();
+  expect(board.isValidLeft([6, 3])).toBeFalsy();
 });
 
 test('Validating possible attacks at the right', () => {
-  // TODO
+  const board = GameBoard();
+
+  expect(board.isValidLeft([0, 9])).toBeTruthy();
+  expect(board.isValidLeft([9, 9])).toBeTruthy();
+
+  const enemyBoard = GameBoard();
+  const ship = <Ship>enemyBoard.getGrid()[1][1];
+
+  board.markEnemyGridCellAsHit([1, 1], ship);
+  board.markEnemyGridCellAsHit([2, 1], ship);
+  board.markEnemyGridCellAsHit([3, 1], ship);
+  board.markEnemyGridCellAsHit([4, 1], ship);
+  board.markEnemyGridCellAsHit([5, 1], ship);
+  board.markEnemyGridCellsAroundShipAsMissed(ship.getArrayCoordinates());
+
+  expect(board.isValidRight([0, 1])).toBeFalsy();
+  expect(board.isValidRight([1, 1])).toBeFalsy();
+  expect(board.isValidRight([2, 1])).toBeFalsy();
+  expect(board.isValidRight([3, 1])).toBeFalsy();
+  expect(board.isValidRight([4, 1])).toBeFalsy();
+  expect(board.isValidRight([5, 1])).toBeFalsy();
+  expect(board.isValidRight([6, 1])).toBeFalsy();
+
+  expect(board.isValidRight([0, 0])).toBeFalsy();
+  expect(board.isValidRight([1, 0])).toBeFalsy();
+  expect(board.isValidRight([2, 0])).toBeFalsy();
+  expect(board.isValidRight([3, 0])).toBeFalsy();
+  expect(board.isValidRight([4, 0])).toBeFalsy();
+  expect(board.isValidRight([5, 0])).toBeFalsy();
+  expect(board.isValidRight([6, 0])).toBeFalsy();
 });
 
 test('Viewing the grid', () => {
@@ -303,49 +369,3 @@ test('Destroying all ships', () => {
     ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
   ]);
 });
-
-// Simulating game-loop
-/*
-test('Game simulation', () => {
-  let currentPlayer = GameBoard();
-  let nextPlayer = GameBoard();
-  let isFinished = false;
-
-  while (!isFinished) {
-    const generatedAttack = currentPlayer.generateAttack();
-    const resultOfAttack = nextPlayer.receiveAttack(generatedAttack);
-
-    if (resultOfAttack === 'SUNK') {
-      const ship = <Ship>nextPlayer.getGrid()[generatedAttack[0]][generatedAttack[1]];
-      const shipCoords = ship.getArrayCoordinates();
-
-      currentPlayer.updateValidAttacksAfterSunk(shipCoords);
-      currentPlayer.updateNotFinished([]);
-    }
-
-    if (resultOfAttack === 'HIT') {
-      const notFinished = currentPlayer.getNotFinished();
-
-      if (notFinished.length === 2) {
-        notFinished.pop();
-      }
-
-      notFinished.push(generatedAttack);
-      currentPlayer.updateNotFinished(notFinished);
-    }
-
-    currentPlayer.removeOnePossibleAttack(generatedAttack);
-
-    if (nextPlayer.areSunk()) {
-      isFinished = true;
-    } else if (resultOfAttack === 'MISSED') {
-      const copy = currentPlayer;
-      currentPlayer = nextPlayer;
-      nextPlayer = copy;
-    }
-
-    console.log(currentPlayer.getGridView());
-    console.log(nextPlayer.getGridView());
-  }
-});
-*/

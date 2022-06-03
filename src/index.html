@@ -1,12 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
     <title>Battleship</title>
-</head>
-<body>
-    
-</body>
+  </head>
+  <body class="font-main">
+
+    <!-- Game menu -->
+    <div
+      class="game-menu flex flex-col justify-start items-center h-screen"
+    >
+      <div
+        class="text-center basis-1/2 text-6xl font-bold flex justify-center items-center"
+      >
+        <span>
+          Welcome to Battleship.
+        </span>
+      </div>
+      <div class="flex flex-col w-3/4 xs:w-1/2 sm:w-1/3 md:w-1/4">
+        <div
+          class="border-2 border-black rounded-full text-center text-white bg-blue-500 text-3xl font-bold mt-3 cursor-pointer"
+        >
+          Play
+        </div>
+        <div class="flex justify-around items-center mt-3 pl-0 form-check form-switch">
+          <input
+            class="form-check-input basis-1/6 h-[80%] appearance-none rounded-full bg-white bg-no-repeat bg-contain bg-gray-300 focus:outline-none cursor-pointer shadow-sm"
+            type="checkbox"
+            role="switch"
+            id="flexSwitchCheckChecked"
+            checked
+          />
+          <label
+            class="form-check-label text-gray-800 text-2xl xl:text-3xl text-center"
+            for="flexSwitchCheckChecked"
+            >Against Computer</label
+          >
+        </div>
+        <div class="dropdown relative mt-3">
+          <button
+            class="dropdown-toggle w-full px-6 py-2.5 bg-blue-500 text-white text-2xs leading-tight uppercase rounded border-2 border-black shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg active:text-white transition duration-150 ease-in-out flex justify-center items-center whitespace-nowrap"
+            type="button"
+            id="timeLimitSettingsButton"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            5 seconds
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fas"
+              data-icon="caret-down"
+              class="w-2 ml-2"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 320 512"
+            >
+              <path
+                fill="currentColor"
+                d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
+              ></path>
+            </svg>
+          </button>
+          <ul
+            class="dropdown-menu w-full min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 hidden m-0 bg-clip-padding border-none"
+            aria-labelledby="timeLimitSettingsButton"
+          >
+            <li>
+              <a
+                class="dropdown-item time-limit-option text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >5 seconds</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item time-limit-option text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >10 seconds</a
+              >
+            </li>
+            <li>
+              <a
+                class="dropdown-item time-limit-option text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >15 seconds</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Board template -->
+    <div class="board-template gap-0 columns-11 w-[550px] m-auto">
+      <div class="cell"></div>
+      <div class="cell">A</div>
+      <div class="cell">B</div>
+      <div class="cell">C</div>
+      <div class="cell">D</div>
+      <div class="cell">E</div>
+      <div class="cell">F</div>
+      <div class="cell">G</div>
+      <div class="cell">H</div>
+      <div class="cell">I</div>
+      <div class="cell">J</div>
+      <div class="cell border-b-4 border-black">1</div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-2 border-r-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-l-4 border-l-black border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">2</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">3</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">4</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">5</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">6</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">7</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">8</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">9</div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div class="cell clicked border-b-2 border-r-2 border-gray-500"></div>
+      <div
+        class="cell clicked border-b-4 border-b-black border-r-2 border-gray-500"
+      ></div>
+      <div class="cell border-b-4 border-black">10</div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-2 border-gray-500"
+      ></div>
+      <div class="cell clicked border-r-4 border-b-4 border-black"></div>
+    </div>
+  </body>
 </html>

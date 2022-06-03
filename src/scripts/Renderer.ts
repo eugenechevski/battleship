@@ -1,79 +1,51 @@
-export default function () {
-  function createEmptyGrid(): HTMLElement {
-    const emptyGrid = document.createElement('div');
-    emptyGrid.classList.add('gap-0', 'columns-[50px]', 'w-[550px]', 'm-auto', 'mt-[2.5%]');
+import { DOMNodes } from './DOMNodes';
+import { DOMVars } from './DOMVars';
 
-    return emptyGrid;
+export default function (controller: Controller) {
+  function getBoardTemplate(): Node {
+    return DOMNodes.boardTemplate.cloneNode(true);
   }
 
-  function drawGrid(): void {
-    const newGrid = createEmptyGrid();
-    let cell;
-
-    for (let row = 0; row < 11; row += 1) {
-      // 11 rows
-      for (let col = 0; col < 11; col += 1) {
-        // 11 column
-        cell = document.createElement('div');
-        cell.classList.add('cell');
-
-        if (row === 0) {
-          if (col > 0) {
-            // The first cell of each row
-            cell.textContent = String.fromCharCode(64 + col);
-          }
-          newGrid.appendChild(cell);
-        } else {
-          if (col === 0) {
-            // non-empty cells
-            cell.textContent = row.toString();
-          }
-
-          if (col > 0 && row === 1) {
-            cell.classList.add('border-l-4', 'border-l-black');
-          }
-
-          if (col === 1) {
-            cell.classList.add('border-t-4', 'border-t-black');
-          }
-
-          if (col === 10) {
-            cell.classList.add('border-b-4', 'border-b-black');
-          }
-
-          if (col > 0 && row === 10) {
-            cell.classList.add('border-r-4', 'border-black');
-          }
-
-          if (col > 0 && row < 10) {
-            cell.classList.add('border-r-2', 'border-r-gray-200');
-          }
-
-          if (col > 0 && col < 10) {
-            cell.classList.add('border-b-2', 'border-b-gray-200');
-          }
-        }
-
-        newGrid.appendChild(cell);
-      }
-    }
-
-    document.body.appendChild(newGrid);
+  function handleTimeLimitSettings(newTimeLimit: 5 | 10 | 15): void {
+    DOMVars.timeLimit = newTimeLimit;
+    DOMNodes.timeLimitSettingsButton.innerHTML = String(DOMVars.timeLimit) + ' seconds';
   }
 
-  function initNodes() {}
+  function initNodes() {
+    DOMNodes.boardTemplate = <Element>document.querySelector('.board-template');
+    document.querySelector('.board-template')?.remove();
+
+    DOMNodes.gameMenu = <Element>document.querySelector('.game-menu');
+    DOMNodes.timeLimitSettingsButton = <Element>DOMNodes.gameMenu.querySelector('#timeLimitSettingsButton');
+  }
 
   function initListeners() {
-    document.querySelector('.draw')?.addEventListener('click', drawGrid);
+    // Time-limit options
+    const timeLimitOptionElements = DOMNodes.gameMenu.getElementsByClassName('time-limit-option');
+    for (let i = 0; i < timeLimitOptionElements.length; i += 1) {
+      const timeLimitValue = timeLimitOptionElements[i].innerHTML;
+      if (timeLimitValue === '5 seconds') {
+        timeLimitOptionElements[i].addEventListener('click', handleTimeLimitSettings.bind(this, 5));
+      } else if (timeLimitValue === '10 seconds') {
+        timeLimitOptionElements[i].addEventListener('click', handleTimeLimitSettings.bind(this, 10));
+      } else if (timeLimitValue === '15 seconds') {
+        timeLimitOptionElements[i].addEventListener('click', handleTimeLimitSettings.bind(this, 15));
+      }
+    }
+  }
+
+  function initVars() {
+    DOMVars.timeLimit = 5;
   }
 
   function init() {
     initNodes();
     initListeners();
+    initVars();
   }
 
   return {
     init,
-    drawGrid,
+    getBoardTemplate,
   };
 }

@@ -1,5 +1,6 @@
 import './style.css';
-import DOM from './scripts/DOM';
+import Controller from './scripts/Controller';
+import 'tw-elements';
 
-const DOMModule = DOM();
-DOMModule.init();
+const controller = Controller();
+controller.init();
