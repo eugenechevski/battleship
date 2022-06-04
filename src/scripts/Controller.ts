@@ -6,12 +6,12 @@ export default function Controller() {
   let currentPlayer: Player;
   let nextPlayer: Player;
 
-  function init(this: Controller) {
-    renderer = Renderer(this);
+  function init(self: Controller) {
+    renderer = Renderer(self);
     renderer.init();
   }
 
-  function start(): void {
+  function start(againstComputer: boolean, timeLimit: number): void {
     status = 'PLAYING';
   }
 
@@ -33,5 +33,6 @@ export default function Controller() {
 
   return {
     init,
+    start,
   };
 }

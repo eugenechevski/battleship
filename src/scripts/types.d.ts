@@ -18,4 +18,4 @@ declare type Ship = {
 
 declare type Grid = (boolean | Ship)[][];
 
-declare type Controller = {};
+declare type Controller = any;

@@ -6,7 +6,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 50px;
 }
 
 .cell.clicked {
@@ -15,4 +14,28 @@
 
 .cell.clicked:active {
   background-color: gray;
+}
+
+@media (min-width: 375px) {
+  .cell {
+    height: calc(90vw / 12);
+  }
+}
+
+@media (min-width: 420px) {
+  .cell {
+    height: calc(70vw / 12);
+  }
+}
+
+@media (min-width: 576px) {
+  .cell {
+    height: calc(55vw / 12);
+  }
+}
+
+@media (min-width: 768px) {
+  .cell {
+    height: calc(35vw / 12);
+  }
 }
