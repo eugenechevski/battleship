@@ -6,14 +6,14 @@ export default function (controller: Controller) {
     if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
       document.body.lastElementChild.remove();
     }
-    document.body.appendChild(DOMNodes.gameMenu.cloneNode(true));
+    document.body.appendChild(DOMNodes.gameMenuScene.cloneNode(true));
   }
 
   function loadCountDownScene(): void {
     if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
       document.body.lastElementChild.remove();
     }
-    document.body.appendChild(DOMNodes.countDown.cloneNode(true));
+    document.body.appendChild(DOMNodes.countDownScene.cloneNode(true));
   }
 
   function loadGameSetupScene(): void {
@@ -21,7 +21,7 @@ export default function (controller: Controller) {
       document.body.lastElementChild.remove();
     }
 
-    const clone = DOMNodes.gameSetup.cloneNode(true);
+    const clone = DOMNodes.gameSetupScene.cloneNode(true);
     clone.childNodes[3].appendChild(DOMNodes.boardTemplate.cloneNode(true));
     document.body.appendChild(clone);
   }
@@ -32,20 +32,45 @@ export default function (controller: Controller) {
 
   function handleTimeLimitSettings(newTimeLimit: 5 | 10 | 15): void {
     DOMVars.timeLimit = newTimeLimit;
-    document.querySelector('#timeLimitSettingsButton').innerHTML = `${String(DOMVars.timeLimit)} seconds`;
+    document.querySelector('#timeLimitSettingsButton').innerHTML = `${String(
+      DOMVars.timeLimit,
+    )} seconds`;
+  }
+
+  function handleClickedCell(target: Element): void {
+    // TODO
+  }
+
+  function labelCells(): void {
+    const cells = DOMNodes.boardTemplate.children;
+
+    for (let col = 1; col < 11; col += 1) {
+      for (let row = 1; row < 11; row += 1) {
+        cells[col * 11 + row].id = `${row - 1}${col - 1}`;
+      }
+    }
   }
 
   function initNodes() {
-    DOMNodes.gameMenu = <Element>document.querySelector('.game-menu');
-    DOMNodes.gameMenu.remove();
+    DOMNodes.gameMenuScene = <Element>document.querySelector('.game-menu');
+    DOMNodes.gameMenuScene.remove();
 
-    DOMNodes.countDown = <Element>document.querySelector('.count-down');
-    DOMNodes.countDown.remove();
+    DOMNodes.countDownScene = <Element>document.querySelector('.count-down');
+    DOMNodes.countDownScene.remove();
 
     DOMNodes.boardTemplate = <Element>document.querySelector('.board-template');
+    labelCells();
     DOMNodes.boardTemplate.remove();
-    DOMNodes.gameSetup = <Element>document.querySelector('.game-setup');
-    DOMNodes.gameSetup.remove();
+    DOMNodes.gameSetupScene = <Element>document.querySelector('.game-setup');
+    DOMNodes.gameSetupScene.remove();
+
+    DOMNodes.gamePlayScene = <Element>document.querySelector('.game-play');
+    DOMNodes.gamePlayScene.children[1].children[0].appendChild(
+      DOMNodes.boardTemplate.cloneNode(true),
+    );
+    DOMNodes.gamePlayScene.children[1].children[2].appendChild(
+      DOMNodes.boardTemplate.cloneNode(true),
+    );
   }
 
   function initListeners() {
@@ -63,6 +88,14 @@ export default function (controller: Controller) {
 
       if (source.classList.contains('time-limit-option')) {
         handleTimeLimitSettings(<5 | 10 | 15>Number(source.innerHTML.split(' ')[0]));
+      }
+
+      if (source.className.startsWith('cell clicked')) {
+        handleClickedCell(source);
+      }
+
+      if (source.tagName === 'LI') {
+        event.stopPropagation();
       }
     });
 

@@ -1,3 +1,5 @@
+@import url(./fontello);
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,7 +14,7 @@
   cursor: pointer;
 }
 
-.cell.clicked:active {
+.cell.clicked:hover {
   background-color: gray;
 }
 
