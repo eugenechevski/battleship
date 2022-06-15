@@ -24,6 +24,7 @@
       <button id="setup-button" class="border border-black rounded-full">
         Setup
       </button>
+      <button id="game-play-button" class="border border-black rounded-full">Game play</button>
     </div>
 
     <!-- Game menu -->
@@ -135,41 +136,41 @@
       class="game-play flex flex-col justify-center items-center h-screen"
     >
       <div
-        class="basis-3/12 flex justify-center items-center w-full text-5xl"
+        class="basis-2/12 flex justify-center items-center w-full text-2xl lg:text-5xl"
       >
         <span class="status-message">It's your turn, shoot the salvo!</span>
       </div>
-      <div class="basis-6/12 flex justify-center w-full">
+      <div class="basis-8/12 relative flex flex-col sm:flex-row justify-center items-center w-full">
         <div class="basis-5/12"></div>
         <div
-          class="flex flex-col basis-1/12 justify-center items-center w-full text-3xl"
+          class="game-timer flex flex-col basis-1/12 justify-center items-center w-full h-full text-lg md:text-xl lg:text-3xl"
         >
           <span>Round 1</span>
           <span>00:00</span>
         </div>
-        <div class="basis-5/12"></div>
+        <div class="basis-5/12 hidden sm:block"></div>
+        <!-- Arrow for smaller screens -->
+        <button id="switch-board-button" class="icon-right-arrow settings-btn mr-2 xs:mr-4 absolute top-1/2 right-0 block sm:hidden"></button>
       </div>
       <div
-        class="basis-3/12 flex items-center justify-start w-full"
+        class="basis-2/12 flex items-center justify-end w-full"
       >
-        <!-- Placeholder -->
-        <div class="h-full basis-1/3"></div>
         <div
-          class="basis-1/3 flex items-center justify-center h-full"
+          class="basis-2/3 sm:basis-1/3 flex items-center justify-center h-full"
         >
           <!-- Time bar  -->
           <div
-            class="timer border-4 border-black bg-blue-500 basis-1/2 h-1/2"
+            class="timer border-4 border-black bg-blue-500 basis-3/4 h-1/2"
           ></div>
           <!-- Next player button -->
           <button
-            class="border-4 border-black bg-blue-500 text-white rounded-full text-xl basis-1/3 hidden"
+            class="border-4 border-black bg-blue-500 text-white rounded-full text-xl md:text-2xl xl:text-4xl basis-3/4 md:basis-1/2 hidden"
           >
             Next player
           </button>
           <!-- After game controls -->
           <div
-            class="after-game-controls flex flex-col basis-1/3 text-xl hidden"
+            class="after-game-controls flex flex-col basis-1/2 text-xl md:text-2xl lg:text-4xl hidden"
           >
             <button
               class="border-4 border-black bg-blue-500 text-white rounded-md"
@@ -184,11 +185,11 @@
           </div>
         </div>
         <div
-          class="flex justify-center items-center basis-1/12 ml-auto w-full h-full"
+          class="flex justify-end items-center basis-1/6 sm:basis-1/3 w-full h-full"
         >
-          <div class="dropup relative">
+          <div class="dropup relative mr-2 xs:mr-4">
             <button
-              class="dropdown-toggle w-10 h-10 bg-blue-500 border-2 border-black rounded-full icon-settings text-2xl text-center leading-relaxed"
+              class="dropdown-toggle settings-btn icon-settings"
               type="button"
               id="settingsButton"
               data-bs-toggle="dropdown"
@@ -199,22 +200,22 @@
               aria-labelledby="settingsButton"
             >
               <li
-                class="h-10 w-10 mb-1 cursor-pointer border-2 border-black bg-blue-500 rounded-full icon-surrender-flag text-2xl text-center leading-relaxed"
+                class="mb-1 icon-surrender-flag settings-btn"
               >
                 <a class="dropdown-item" href="#"></a>
               </li>
               <li
-                class="h-10 w-10 mb-1 cursor-pointer border-2 border-black bg-blue-500 rounded-full icon-pause text-2xl text-center leading-relaxed"
+                class="mb-1 icon-pause settings-btn"
               >
                 <a class="dropdown-item" href="#"></a>
               </li>
               <li
-                class="h-10 w-10 mb-1 cursor-pointer border-2 border-black bg-blue-500 rounded-full icon-sound text-2xl text-center leading-relaxed"
+                class="mb-1 icon-volume-low settings-btn"
               >
                 <a class="dropdown-item" href="#"></a>
               </li>
               <li
-                class="h-10 w-10 cursor-pointer border-2 border-black bg-blue-500 rounded-full icon-rules text-2xl text-center leading-relaxed"
+                class="icon-rules settings-btn"
               >
                 <a class="dropdown-item" href="#"></a>
               </li>
@@ -226,7 +227,7 @@
 
     <!-- Board template -->
     <div
-      class="board-template gap-0 columns-12 w-[90vw] xs:w-[70vw] sm:w-[55vw] md:w-[35vw] m-auto"
+      class="board-template gap-0 columns-12 m-auto"
     >
       <div class="cell"></div>
       <div class="cell">A</div>

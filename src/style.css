@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .settings-btn {
+    @apply w-8 xs:w-10 h-8 xs:h-10 bg-blue-500 border-2 border-black text-xl xs:text-2xl text-center leading-normal xs:leading-relaxed rounded-full;
+  }
+}
+
 .cell {
   display: flex;
   justify-content: center;
@@ -18,26 +24,52 @@
   background-color: gray;
 }
 
-@media (min-width: 375px) {
-  .cell {
-    height: calc(90vw / 12);
-  }
+.setup-board,
+.game-play-board {
+  width: 90vw;
+}
+
+.setup-board .cell,
+.game-play-board .cell {
+  height: calc(90vw / 12);
 }
 
 @media (min-width: 420px) {
-  .cell {
+  .setup-board,
+  .game-play-board {
+    width: 70vw;
+  }
+
+  .setup-board .cell,
+  .game-play-board .cell {
     height: calc(70vw / 12);
   }
 }
 
 @media (min-width: 576px) {
-  .cell {
+  .setup-board {
+    width: 55vw;
+  }
+
+  .setup-board .cell {
     height: calc(55vw / 12);
+  }
+
+  .game-play-board {
+    width: 40vw;
+  }
+
+  .game-play-board .cell {
+    height: calc(40vw / 12);
   }
 }
 
 @media (min-width: 768px) {
-  .cell {
+  .setup-board {
+    width: 35vw;
+  }
+
+  .setup-board .cell {
     height: calc(35vw / 12);
   }
 }

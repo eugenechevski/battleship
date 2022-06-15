@@ -20,10 +20,26 @@ export default function (controller: Controller) {
     if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
       document.body.lastElementChild.remove();
     }
-
+    
     const clone = DOMNodes.gameSetupScene.cloneNode(true);
-    clone.childNodes[3].appendChild(DOMNodes.boardTemplate.cloneNode(true));
+    const cloneBoard = DOMNodes.boardTemplate.cloneNode(true);
+    clone.childNodes[3].appendChild(cloneBoard);
     document.body.appendChild(clone);
+    document.querySelector('.board-template').classList.add('setup-board');
+  }
+
+  function loadGamePlayScene(): void {
+    if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
+      document.body.lastElementChild.remove();
+    }
+
+    const clone = DOMNodes.gamePlayScene.cloneNode(true);
+    const cloneBoard1 = DOMNodes.boardTemplate.cloneNode(true);
+    const cloneBoard2 = DOMNodes.boardTemplate.cloneNode(true);
+    document.body.appendChild(clone);
+    document.body.querySelector('.game-play').children[1].children[0].appendChild(cloneBoard1);
+    document.body.querySelector('.game-play').children[1].children[2].appendChild(cloneBoard2);
+    document.querySelectorAll('.board-template').forEach((el) => el.classList.add('game-play-board'));
   }
 
   function handleAgainstComputerSwitch(): void {
@@ -65,12 +81,7 @@ export default function (controller: Controller) {
     DOMNodes.gameSetupScene.remove();
 
     DOMNodes.gamePlayScene = <Element>document.querySelector('.game-play');
-    DOMNodes.gamePlayScene.children[1].children[0].appendChild(
-      DOMNodes.boardTemplate.cloneNode(true),
-    );
-    DOMNodes.gamePlayScene.children[1].children[2].appendChild(
-      DOMNodes.boardTemplate.cloneNode(true),
-    );
+    DOMNodes.gamePlayScene.remove();
   }
 
   function initListeners() {
@@ -97,12 +108,23 @@ export default function (controller: Controller) {
       if (source.tagName === 'LI') {
         event.stopPropagation();
       }
-    });
 
-    // Testing
-    document.querySelector('#game-menu-button').addEventListener('click', loadGameMenuScene);
-    document.querySelector('#count-down-button').addEventListener('click', loadCountDownScene);
-    document.querySelector('#setup-button').addEventListener('click', loadGameSetupScene);
+      if (source.id === 'game-menu-button') {
+        loadGameMenuScene();
+      }
+
+      if (source.id === 'count-down-button') {
+        loadCountDownScene();
+      }
+
+      if (source.id === 'setup-button') {
+        loadGameSetupScene();
+      }
+
+      if (source.id === 'game-play-button') {
+        loadGamePlayScene();
+      }
+    });
   }
 
   function initVars() {
