@@ -20,12 +20,13 @@ export default function (controller: Controller) {
     if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
       document.body.lastElementChild.remove();
     }
-    
+
     const clone = DOMNodes.gameSetupScene.cloneNode(true);
     const cloneBoard = DOMNodes.boardTemplate.cloneNode(true);
     clone.childNodes[3].appendChild(cloneBoard);
     document.body.appendChild(clone);
     document.querySelector('.board-template').classList.add('setup-board');
+    drawShip(DOMVars.cellCoords);
   }
 
   function loadGamePlayScene(): void {
@@ -39,7 +40,66 @@ export default function (controller: Controller) {
     document.body.appendChild(clone);
     document.body.querySelector('.game-play').children[1].children[0].appendChild(cloneBoard1);
     document.body.querySelector('.game-play').children[1].children[2].appendChild(cloneBoard2);
-    document.querySelectorAll('.board-template').forEach((el) => el.classList.add('game-play-board'));
+    document
+      .querySelectorAll('.board-template')
+      .forEach((el) => el.classList.add('game-play-board'));
+  }
+
+  function eraseShip(coords: Coordinate) {
+    const id = `${coords[0]}${coords[1]}`;
+    if (coords[0] > 0) {
+      document
+        .getElementById(`${coords[0] - 1}${coords[1]}`)
+        .classList.remove('border-b-black', 'border-b-4');
+      document.getElementById(`${coords[0] - 1}${coords[1]}`).classList.add('border-b-2');
+    }
+
+    if (coords[0] < 9) {
+      document.getElementById(`${id}`).classList.remove('border-b-black', 'border-b-4');
+      document.getElementById(`${id}`).classList.add('border-b-2');
+    }
+
+    if (coords[1] > 0) {
+      document
+        .getElementById(`${coords[0]}${coords[1] - 1}`)
+        .classList.remove('border-r-black', 'border-r-4');
+      document.getElementById(`${coords[0]}${coords[1] - 1}`).classList.add('border-r-2');
+    }
+
+    if (coords[1] < 9) {
+      document.getElementById(`${id}`).classList.remove('border-r-black', 'border-r-4');
+      document.getElementById(`${id}`).classList.add('border-r-2');
+    }
+  }
+
+  function drawShip(coords: Coordinate) {
+    if (coords[0] < 9) {
+      document.getElementById(`${coords[0]}${coords[1]}`).classList.remove('border-b-2');
+      document
+        .getElementById(`${coords[0]}${coords[1]}`)
+        .classList.add('border-b-black', 'border-b-4');
+    }
+
+    if (coords[0] > 0) {
+      document.getElementById(`${coords[0] - 1}${coords[1]}`).classList.remove('border-b-2');
+      document
+        .getElementById(`${coords[0] - 1}${coords[1]}`)
+        .classList.add('border-b-black', 'border-b-4');
+    }
+
+    if (coords[1] < 9) {
+      document.getElementById(`${coords[0]}${coords[1]}`).classList.remove('border-r-2');
+      document
+        .getElementById(`${coords[0]}${coords[1]}`)
+        .classList.add('border-r-black', 'border-r-4');
+    }
+
+    if (coords[1] > 0) {
+      document.getElementById(`${coords[0]}${coords[1] - 1}`).classList.remove('border-r-2');
+      document
+        .getElementById(`${coords[0]}${coords[1] - 1}`)
+        .classList.add('border-r-black', 'border-r-4');
+    }
   }
 
   function handleAgainstComputerSwitch(): void {
@@ -125,11 +185,32 @@ export default function (controller: Controller) {
         loadGamePlayScene();
       }
     });
+
+    document.body.addEventListener('mousedown', (event) => {
+      const source = <Element>event.target;
+      if (source.classList.contains('cell') && source.classList.contains('clicked')) {
+        const coords = [Number(source.id.charAt(0)), Number(source.id.charAt(1))];
+        if (coords[0] === DOMVars.cellCoords[0] && coords[1] === DOMVars.cellCoords[1]) {
+          DOMVars.drag = true;
+        }
+      }
+    });
+    document.body.addEventListener('mouseup', (event) => {
+      if (DOMVars.drag) {
+        const { id } = <Element>event.target;
+        eraseShip(DOMVars.cellCoords);
+        DOMVars.cellCoords = [Number(id[0]), Number(id[1])];
+        drawShip(DOMVars.cellCoords);
+        DOMVars.drag = false;
+      }
+    });
   }
 
   function initVars() {
     DOMVars.timeLimit = 5;
     DOMVars.againstComputer = true;
+    DOMVars.cellCoords = [0, 0];
+    DOMVars.drag = false;
   }
 
   function init() {
