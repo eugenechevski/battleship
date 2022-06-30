@@ -5,6 +5,15 @@
 import Ship from './Ship';
 
 export default function () {
+  const ships: { [index: string]: Ship } = {
+    AC: Ship('Aircraft Carrier', 5),
+    BS: Ship('Battleship', 4),
+    CR: Ship('Cruiser', 3),
+    D0: Ship('Destroyer 0', 2),
+    D1: Ship('Destroyer 1', 2),
+    S0: Ship('Submarine 0', 1),
+    S1: Ship('Submarine 1', 1),
+  };
   const tableName: { [shipName: string]: string } = {
     'Aircraft Carrier': 'AC',
     Battleship: 'BS',
@@ -21,10 +30,190 @@ export default function () {
   const possibleAttacksOnEnemyGrid = createPossibleAttacksSet();
   // Storage for valid possible attacks
   const enemyGridMap = createMapOfEnemyGrid();
+  // The map of the grid of the player
+  const thisGridMap = createMapOfThisGrid();
   // The count of the player's destroyed ships
   let numberOfShipsAlive = 7;
   // Storage for coordinates of the last successful attack
   let notFinished: Coordinate[] = [];
+
+  function isValidToMoveShipFromTo(
+    target: Ship,
+    src: Coordinate,
+    dest: Coordinate,
+  ): false | Coordinate[] {
+    // Check whether the destination coordinate has a ship already
+    if (typeof grid[dest[0]][dest[1]] !== 'boolean') {
+      return false;
+    }
+
+    // Take the index of the source coordinate in the ship's array of coordinates
+    let srcIndex = -1;
+    const shipCoords = target.getArrayCoordinates();
+    for (let i = 0; i < shipCoords.length; i += 1) {
+      if (shipCoords[i][0] === src[0] && shipCoords[i][1] === src[1]) {
+        srcIndex = i;
+        break;
+      }
+    }
+
+    // See whether the projected ship will be in boundaries
+    const orientation = target.getOrientation();
+    const { shipSize } = target;
+    if (
+      (orientation === 'HORIZONTAL'
+        && (dest[1] - srcIndex < 0 || dest[1] + (shipSize - srcIndex - 1) > 9))
+      || (orientation === 'VERTICAL'
+        && (dest[0] - srcIndex < 0 || dest[0] + (shipSize - srcIndex - 1) > 9))
+    ) {
+      return false;
+    }
+
+    // See whether the projected position is valid
+    const projectedCoords = [];
+    if (orientation === 'HORIZONTAL') {
+      if (
+        areThereAnyShipsOnLeft([dest[0], dest[1] - srcIndex], target)
+        || areThereAnyShipsOnRight([dest[0], dest[1] + (shipSize - srcIndex - 1)], target)
+      ) {
+        return false;
+      }
+
+      for (let i = 0; i < shipSize; i += 1) {
+        const row = dest[0];
+        const col = dest[1] - srcIndex + i;
+        if (
+          (typeof grid[row][col] !== 'boolean' && grid[row][col] !== target)
+          || areThereAnyShipsOnTop([row, col], target)
+          || areThereAnyShipsOnBottom([row, col], target)
+        ) {
+          return false;
+        }
+        projectedCoords.push([row, col]);
+      }
+    } else if (orientation === 'VERTICAL') {
+      if (
+        areThereAnyShipsOnTop([dest[0] - srcIndex, dest[1]], target)
+        || areThereAnyShipsOnBottom([dest[0] + (shipSize - srcIndex - 1), dest[1]], target)
+      ) {
+        return false;
+      }
+
+      for (let i = 0; i < shipSize; i += 1) {
+        const row = dest[0] - srcIndex + i;
+        const col = dest[1];
+        if (
+          (typeof grid[row][col] !== 'boolean' && grid[row][col] !== target)
+          || areThereAnyShipsOnLeft([row, col], target)
+          || areThereAnyShipsOnRight([row, col], target)
+        ) {
+          return false;
+        }
+        projectedCoords.push([row, col]);
+      }
+    } else if (
+      // Sub-marine
+      areThereAnyShipsOnTop([dest[0], dest[1]], target)
+      || areThereAnyShipsOnLeft([dest[0], dest[1]], target)
+      || areThereAnyShipsOnBottom([dest[0], dest[1]], target)
+      || areThereAnyShipsOnRight([dest[0], dest[1]], target)
+    ) {
+      return false;
+    } else {
+      projectedCoords.push(dest);
+    }
+
+    return projectedCoords;
+  }
+
+  function moveShip(target: Ship, src: Coordinate, newCoords: Coordinate[]) {
+    // Update the internal state
+    let oldCoords = target.getArrayCoordinates();
+    target.clearCoordinates();
+    for (let i = 0; i < oldCoords.length; i += 1) {
+      grid[oldCoords[i][0]][oldCoords[i][1]] = true;
+      thisGridMap[oldCoords[i][0] * 10 + oldCoords[i][1]] = true;
+    }
+    for (let i = 0; i < newCoords.length; i += 1) {
+      grid[newCoords[i][0]][newCoords[i][1]] = target;
+      thisGridMap[newCoords[i][0] * 10 + newCoords[i][1]] = target;
+      target.addCoordinate(newCoords[i]);
+    }
+  }
+
+  function areThereAnyShipsOnLeft(coord: Coordinate, target: Ship): boolean {
+    const row = coord[0];
+    const col = coord[1];
+
+    const leftTop = (row - 1) * 10 + col - 1;
+    const leftMiddle = row * 10 + col - 1;
+    const leftBottom = (row + 1) * 10 + col - 1;
+
+    return (
+      col !== 0
+      && ((row > 0 && typeof thisGridMap[leftTop] !== 'boolean' && thisGridMap[leftTop] !== target)
+        || (typeof thisGridMap[leftMiddle] !== 'boolean' && thisGridMap[leftMiddle] !== target)
+        || (row < 9
+          && typeof thisGridMap[leftBottom] !== 'boolean'
+          && thisGridMap[leftBottom] !== target))
+    );
+  }
+
+  function areThereAnyShipsOnRight(coord: Coordinate, target: Ship): boolean {
+    const row = coord[0];
+    const col = coord[1];
+
+    const rightTop = (row - 1) * 10 + col + 1;
+    const rightMiddle = row * 10 + col + 1;
+    const rightBottom = (row + 1) * 10 + col + 1;
+
+    return (
+      col !== 9
+      && ((row > 0
+        && typeof thisGridMap[rightTop] !== 'boolean'
+        && thisGridMap[rightTop] !== target)
+        || (typeof thisGridMap[rightMiddle] !== 'boolean' && thisGridMap[rightMiddle] !== target)
+        || (row < 9
+          && typeof thisGridMap[rightBottom] !== 'boolean'
+          && thisGridMap[rightBottom] !== target))
+    );
+  }
+
+  function areThereAnyShipsOnTop(coord: Coordinate, target: Ship): boolean {
+    const row = coord[0];
+    const col = coord[1];
+
+    const topLeft = (row - 1) * 10 + col - 1;
+    const topCenter = (row - 1) * 10 + col;
+    const topRight = (row - 1) * 10 + col + 1;
+
+    return (
+      row !== 0
+      && ((col > 0 && typeof thisGridMap[topLeft] !== 'boolean' && thisGridMap[topLeft] !== target)
+        || (typeof thisGridMap[topCenter] !== 'boolean' && thisGridMap[topCenter] !== target)
+        || (col < 9 && typeof thisGridMap[topRight] !== 'boolean' && thisGridMap[topRight] !== target))
+    );
+  }
+
+  function areThereAnyShipsOnBottom(coord: Coordinate, target: Ship): boolean {
+    const row = coord[0];
+    const col = coord[1];
+
+    const bottomLeft = (row + 1) * 10 + col - 1;
+    const bottomCenter = (row + 1) * 10 + col;
+    const bottomRight = (row + 1) * 10 + col + 1;
+
+    return (
+      row !== 9
+      && ((col > 0
+        && typeof thisGridMap[bottomLeft] !== 'boolean'
+        && thisGridMap[bottomLeft] !== target)
+        || (typeof thisGridMap[bottomCenter] !== 'boolean' && thisGridMap[bottomCenter] !== target)
+        || (col < 9
+          && typeof thisGridMap[bottomRight] !== 'boolean'
+          && thisGridMap[bottomRight] !== target))
+    );
+  }
 
   function areSunk(): boolean {
     return numberOfShipsAlive === 0;
@@ -63,6 +252,21 @@ export default function () {
     return enemyGridMap;
   }
 
+  function getThisGridMap(): { [index: number]: boolean | Ship } {
+    return thisGridMap;
+  }
+
+  function createMapOfThisGrid(): { [index: number]: boolean | Ship } {
+    const thisMap: { [index: number]: boolean | Ship } = {};
+    for (let row = 0; row < 10; row += 1) {
+      for (let col = 0; col < 10; col += 1) {
+        thisMap[row * 10 + col] = grid[row][col];
+      }
+    }
+
+    return thisMap;
+  }
+
   /**
    * The function produces a new copy of the array that serves as the internal grid
    * of the player's board. It populates the array with ships and boolean's 'true' value
@@ -70,16 +274,6 @@ export default function () {
    * @returns populated grid
    */
   function createGrid(): Grid {
-    const ships: { [index: string]: Ship } = {
-      AC: Ship('Aircraft Carrier', 5),
-      BS: Ship('Battleship', 4),
-      CR: Ship('Cruiser', 3),
-      D0: Ship('Destroyer 0', 2),
-      D1: Ship('Destroyer 1', 2),
-      S0: Ship('Submarine 0', 1),
-      S1: Ship('Submarine 1', 1),
-    };
-
     const nameMap = [
       ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
       ['.', 'AC', '.', 'BS', 'BS', 'BS', 'BS', '.', '.', '.'],
@@ -524,6 +718,8 @@ export default function () {
   }
 
   return {
+    ships,
+    tableName,
     possibleAttacksOnEnemyGrid,
     receiveAttack,
     generateAttack,
@@ -543,5 +739,7 @@ export default function () {
     getEnemyGridMap,
     updateGridView,
     updateNotFinished,
+    isValidToMoveShipFromTo,
+    moveShip,
   };
 }

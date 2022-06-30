@@ -350,7 +350,5 @@ MigrationBackup/
 .ionide/
 
 # Custom
-assignment.md
-todo.md
-features.md
+devlog.md
 .vscode

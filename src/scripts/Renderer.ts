@@ -1,43 +1,48 @@
 import { DOMNodes } from './DOMNodes';
 import { DOMVars } from './DOMVars';
 
-export default function (controller: Controller) {
+export default function () {
+  let controller: Controller;
+
   function loadGameMenuScene(): void {
-    if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
-      document.body.lastElementChild.remove();
-    }
-    document.body.appendChild(DOMNodes.gameMenuScene.cloneNode(true));
+    document.body.children[1].remove();
+    document.body.insertBefore(
+      DOMNodes.gameMenuScene.cloneNode(true),
+      document.body.lastElementChild,
+    );
   }
 
   function loadCountDownScene(): void {
-    if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
-      document.body.lastElementChild.remove();
-    }
-    document.body.appendChild(DOMNodes.countDownScene.cloneNode(true));
+    document.body.children[1].remove();
+    document.body.insertBefore(
+      DOMNodes.countDownScene.cloneNode(true),
+      document.body.lastElementChild,
+    );
   }
 
-  function loadGameSetupScene(): void {
-    if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
-      document.body.lastElementChild.remove();
-    }
+  function loadGameSetupScene(initialGrid?: { [index: string]: Ship }): void {
+    document.body.children[1].remove();
 
     const clone = DOMNodes.gameSetupScene.cloneNode(true);
     const cloneBoard = DOMNodes.boardTemplate.cloneNode(true);
     clone.childNodes[3].appendChild(cloneBoard);
-    document.body.appendChild(clone);
+    document.body.insertBefore(clone, document.body.lastElementChild);
     document.querySelector('.board-template').classList.add('setup-board');
-    drawShip(DOMVars.cellCoords);
+
+    const shipAliases = Object.keys(initialGrid);
+    for (let i = 0; i < shipAliases.length; i += 1) {
+      const ship = initialGrid[shipAliases[i]];
+      drawShip(ship.getArrayCoordinates(), shipAliases[i], ship.getOrientation());
+    }
   }
 
   function loadGamePlayScene(): void {
-    if (!document.body.lastElementChild.className.startsWith('testing-controls')) {
-      document.body.lastElementChild.remove();
-    }
+    document.body.children[1].remove();
 
     const clone = DOMNodes.gamePlayScene.cloneNode(true);
     const cloneBoard1 = DOMNodes.boardTemplate.cloneNode(true);
     const cloneBoard2 = DOMNodes.boardTemplate.cloneNode(true);
-    document.body.appendChild(clone);
+    document.body.insertBefore(clone, document.body.lastElementChild);
     document.body.querySelector('.game-play').children[1].children[0].appendChild(cloneBoard1);
     document.body.querySelector('.game-play').children[1].children[2].appendChild(cloneBoard2);
     document
@@ -45,60 +50,165 @@ export default function (controller: Controller) {
       .forEach((el) => el.classList.add('game-play-board'));
   }
 
-  function eraseShip(coords: Coordinate) {
-    const id = `${coords[0]}${coords[1]}`;
+  function eraseTopBorder(coords: Coordinate) {
     if (coords[0] > 0) {
       document
         .getElementById(`${coords[0] - 1}${coords[1]}`)
-        .classList.remove('border-b-black', 'border-b-4');
+        .classList.remove('border-b-4', 'border-b-black');
       document.getElementById(`${coords[0] - 1}${coords[1]}`).classList.add('border-b-2');
     }
+    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+  }
 
+  function eraseBottomBorder(coords: Coordinate) {
     if (coords[0] < 9) {
-      document.getElementById(`${id}`).classList.remove('border-b-black', 'border-b-4');
-      document.getElementById(`${id}`).classList.add('border-b-2');
+      document
+        .getElementById(`${coords[0]}${coords[1]}`)
+        .classList.remove('border-b-4', 'border-b-black');
+      document.getElementById(`${coords[0]}${coords[1]}`).classList.add('border-b-2');
     }
+    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+  }
 
+  function eraseLeftBorder(coords: Coordinate) {
     if (coords[1] > 0) {
       document
         .getElementById(`${coords[0]}${coords[1] - 1}`)
-        .classList.remove('border-r-black', 'border-r-4');
-      document.getElementById(`${coords[0]}${coords[1] - 1}`).classList.add('border-r-2');
+        .classList.remove('border-r-4', 'border-r-black');
     }
+    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+  }
 
+  function eraseRightBorder(coords: Coordinate) {
     if (coords[1] < 9) {
-      document.getElementById(`${id}`).classList.remove('border-r-black', 'border-r-4');
-      document.getElementById(`${id}`).classList.add('border-r-2');
+      document
+        .getElementById(`${coords[0]}${coords[1]}`)
+        .classList.remove('border-r-4', 'border-r-black');
+    }
+    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+  }
+
+  function eraseVertical(coords: Coordinate[]) {
+    eraseTopBorder(coords[0]);
+    eraseBottomBorder(coords.slice(-1)[0]);
+
+    for (let i = 0; i < coords.length; i += 1) {
+      const coord = coords[i];
+      eraseLeftBorder(coord);
+      eraseRightBorder(coord);
     }
   }
 
-  function drawShip(coords: Coordinate) {
-    if (coords[0] < 9) {
-      document.getElementById(`${coords[0]}${coords[1]}`).classList.remove('border-b-2');
-      document
-        .getElementById(`${coords[0]}${coords[1]}`)
-        .classList.add('border-b-black', 'border-b-4');
-    }
+  function eraseHorizontal(coords: Coordinate[]) {
+    eraseLeftBorder(coords[0]);
+    eraseRightBorder(coords.slice(-1)[0]);
 
+    for (let i = 0; i < coords.length; i += 1) {
+      const coord = coords[i];
+      eraseTopBorder(coord);
+      eraseBottomBorder(coord);
+    }
+  }
+
+  function eraseShip(coords: Coordinate[], orientation?: 'VERTICAL' | 'HORIZONTAL') {
+    if (orientation !== undefined && orientation === 'VERTICAL') {
+      eraseVertical(coords);
+    } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
+      eraseHorizontal(coords);
+    } else {
+      eraseTopBorder(coords[0]);
+      eraseBottomBorder(coords[0]);
+      eraseLeftBorder(coords[0]);
+      eraseRightBorder(coords[0]);
+    }
+  }
+
+  function drawTopBorder(coords: Coordinate, shipAlias: string) {
     if (coords[0] > 0) {
       document.getElementById(`${coords[0] - 1}${coords[1]}`).classList.remove('border-b-2');
       document
         .getElementById(`${coords[0] - 1}${coords[1]}`)
-        .classList.add('border-b-black', 'border-b-4');
+        .classList.add('border-b-4', 'border-b-black');
     }
+    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+  }
 
-    if (coords[1] < 9) {
-      document.getElementById(`${coords[0]}${coords[1]}`).classList.remove('border-r-2');
+  function drawBottomBorder(coords: Coordinate, shipAlias: string) {
+    if (coords[0] < 9) {
+      document.getElementById(`${coords[0]}${coords[1]}`).classList.remove('border-b-2');
       document
         .getElementById(`${coords[0]}${coords[1]}`)
-        .classList.add('border-r-black', 'border-r-4');
+        .classList.add('border-b-4', 'border-b-black');
     }
+    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+  }
 
+  function drawLeftBorder(coords: Coordinate, shipAlias: string) {
     if (coords[1] > 0) {
-      document.getElementById(`${coords[0]}${coords[1] - 1}`).classList.remove('border-r-2');
       document
         .getElementById(`${coords[0]}${coords[1] - 1}`)
-        .classList.add('border-r-black', 'border-r-4');
+        .classList.add('border-r-4', 'border-r-black');
+    }
+    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+  }
+
+  function drawRightBorder(coords: Coordinate, shipAlias: string) {
+    if (coords[1] < 9) {
+      document
+        .getElementById(`${coords[0]}${coords[1]}`)
+        .classList.add('border-r-4', 'border-r-black');
+    }
+    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+  }
+
+  function drawVertical(coords: Coordinate[], shipAlias: string) {
+    drawTopBorder(coords[0], shipAlias);
+    drawBottomBorder(coords.slice(-1)[0], shipAlias);
+
+    for (let i = 0; i < coords.length; i += 1) {
+      const coord = coords[i];
+      drawLeftBorder(coord, shipAlias);
+      drawRightBorder(coord, shipAlias);
+    }
+  }
+
+  function drawHorizontal(coords: Coordinate[], shipAlias: string) {
+    drawLeftBorder(coords[0], shipAlias);
+    drawRightBorder(coords.slice(-1)[0], shipAlias);
+
+    for (let i = 0; i < coords.length; i += 1) {
+      const coord = coords[i];
+      drawTopBorder(coord, shipAlias);
+      drawBottomBorder(coord, shipAlias);
+    }
+  }
+
+  function drawShip(
+    coords: Coordinate[],
+    shipAlias: string,
+    orientation?: 'VERTICAL' | 'HORIZONTAL',
+  ) {
+    if (orientation !== undefined && orientation === 'VERTICAL') {
+      drawVertical(coords, shipAlias);
+    } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
+      drawHorizontal(coords, shipAlias);
+    } else {
+      drawTopBorder(coords[0], shipAlias);
+      drawBottomBorder(coords[0], shipAlias);
+      drawLeftBorder(coords[0], shipAlias);
+      drawRightBorder(coords[0], shipAlias);
+    }
+  }
+
+  function eraseSelectionOfShip(coords: Coordinate[]) {
+    for (let i = 0; i < coords.length; i += 1) {
+      document.getElementById(`${coords[i][0]}${coords[i][1]}`).classList.remove('selected-ship');
+    }
+  }
+
+  function drawSelectionOfShip(coords: Coordinate[]) {
+    for (let i = 0; i < coords.length; i += 1) {
+      document.getElementById(`${coords[i][0]}${coords[i][1]}`).classList.add('selected-ship');
     }
   }
 
@@ -113,8 +223,26 @@ export default function (controller: Controller) {
     )} seconds`;
   }
 
-  function handleClickedCell(target: Element): void {
-    // TODO
+  function drawSelectionOfCoordinate(target: Coordinate): void {
+    document.getElementById(`${target[0]}${target[1]}`).classList.remove('selected-ship');
+    document.getElementById(`${target[0]}${target[1]}`).classList.add('selected-coordinate');
+  }
+
+  function eraseSelectionOfCoordinate(target: Coordinate): void {
+    document.getElementById(`${target[0]}${target[1]}`).classList.remove('selected-coordinate');
+  }
+
+  function resetSelectedShip(): void {
+    DOMVars.selectedCoord = undefined;
+    DOMVars.selectedShip = undefined;
+  }
+
+  function setSelectedCoord(newCoord: Coordinate): void {
+    DOMVars.selectedCoord = newCoord;
+  }
+
+  function setSelectedShip(newShip: Ship): void {
+    DOMVars.selectedShip = newShip;
   }
 
   function labelCells(): void {
@@ -129,7 +257,6 @@ export default function (controller: Controller) {
 
   function initNodes() {
     DOMNodes.gameMenuScene = <Element>document.querySelector('.game-menu');
-    DOMNodes.gameMenuScene.remove();
 
     DOMNodes.countDownScene = <Element>document.querySelector('.count-down');
     DOMNodes.countDownScene.remove();
@@ -150,7 +277,7 @@ export default function (controller: Controller) {
       // # Game-menu elements
 
       if (source.className.startsWith('play-button')) {
-        controller.start(DOMVars.againstComputer, DOMVars.timeLimit);
+        controller.start(DOMVars.againstComputer);
       }
 
       if (source.id.startsWith('playerModeSwitch')) {
@@ -161,8 +288,25 @@ export default function (controller: Controller) {
         handleTimeLimitSettings(<5 | 10 | 15>Number(source.innerHTML.split(' ')[0]));
       }
 
-      if (source.className.startsWith('cell clicked')) {
-        handleClickedCell(source);
+      if (
+        source.classList.contains('cell')
+        && source.classList.contains('clicked')
+        && !source.hasAttribute('name')
+        && DOMVars.selectedShip !== undefined
+      ) {
+        controller.moveShipRequested(DOMVars.selectedShip, DOMVars.selectedCoord, [
+          Number(source.id.charAt(0)),
+          Number(source.id.charAt(1)),
+        ]);
+      } else if (source.hasAttribute('name')) {
+        if (DOMVars.selectedShip !== undefined) {
+          eraseSelectionOfShip(DOMVars.selectedShip.getArrayCoordinates());
+          eraseSelectionOfCoordinate(DOMVars.selectedCoord);
+        }
+        setSelectedShip(controller.getSelectedShip(source.getAttribute('name')));
+        setSelectedCoord([Number(source.id.charAt(0)), Number(source.id.charAt(1))]);
+        drawSelectionOfShip(DOMVars.selectedShip.getArrayCoordinates());
+        drawSelectionOfCoordinate(DOMVars.selectedCoord);
       }
 
       if (source.tagName === 'LI') {
@@ -185,41 +329,33 @@ export default function (controller: Controller) {
         loadGamePlayScene();
       }
     });
-
-    document.body.addEventListener('mousedown', (event) => {
-      const source = <Element>event.target;
-      if (source.classList.contains('cell') && source.classList.contains('clicked')) {
-        const coords = [Number(source.id.charAt(0)), Number(source.id.charAt(1))];
-        if (coords[0] === DOMVars.cellCoords[0] && coords[1] === DOMVars.cellCoords[1]) {
-          DOMVars.drag = true;
-        }
-      }
-    });
-    document.body.addEventListener('mouseup', (event) => {
-      if (DOMVars.drag) {
-        const { id } = <Element>event.target;
-        eraseShip(DOMVars.cellCoords);
-        DOMVars.cellCoords = [Number(id[0]), Number(id[1])];
-        drawShip(DOMVars.cellCoords);
-        DOMVars.drag = false;
-      }
-    });
   }
 
   function initVars() {
     DOMVars.timeLimit = 5;
     DOMVars.againstComputer = true;
-    DOMVars.cellCoords = [0, 0];
+    DOMVars.selectedCoord = [0, 0];
     DOMVars.drag = false;
   }
 
-  function init() {
+  function init(Controller: Controller) {
     initListeners();
     initNodes();
     initVars();
+    controller = Controller;
   }
 
   return {
     init,
+    loadGameSetupScene,
+    drawShip,
+    drawSelectionOfShip,
+    drawSelectionOfCoordinate,
+    eraseShip,
+    eraseSelectionOfShip,
+    eraseSelectionOfCoordinate,
+    resetSelectedShip,
+    setSelectedCoord,
+    setSelectedShip,
   };
 }

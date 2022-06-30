@@ -2,11 +2,16 @@
 export default function (name: string, shipSize: number): Ship {
   const shipName = name;
   const mapCoordinates: { [coord: string]: boolean } = {};
-  const arrCoordinates: Coordinate[] = [];
+  let arrCoordinates: Coordinate[] = [];
   let destroyedCells = shipSize;
+  let orientation: 'VERTICAL' | 'HORIZONTAL' | undefined;
 
   function getName(): string {
     return shipName;
+  }
+
+  function getOrientation(): 'VERTICAL' | 'HORIZONTAL' | undefined {
+    return orientation;
   }
 
   function getArrayCoordinates(): Coordinate[] {
@@ -20,6 +25,17 @@ export default function (name: string, shipSize: number): Ship {
   function addCoordinate(coord: Coordinate): void {
     mapCoordinates[coord.toString()] = true;
     arrCoordinates.push(coord);
+
+    if (arrCoordinates.length > 1) {
+      orientation = arrCoordinates[0][0] - arrCoordinates[1][0] !== 0 ? 'VERTICAL' : 'HORIZONTAL';
+    }
+  }
+
+  function clearCoordinates(): void {
+    for (let i = 0; i < arrCoordinates.length; i += 1) {
+      delete mapCoordinates[arrCoordinates[i].toString()];
+    }
+    arrCoordinates = [];
   }
 
   function isSunk(): boolean {
@@ -42,7 +58,9 @@ export default function (name: string, shipSize: number): Ship {
     getArrayCoordinates,
     wasHit,
     addCoordinate,
+    clearCoordinates,
     shipSize,
+    getOrientation,
     isSunk,
     hit,
   };
