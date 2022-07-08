@@ -18,6 +18,10 @@ export default function (name: string, shipSize: number): Ship {
     return arrCoordinates;
   }
 
+  function setOrientation(newOrientation: 'VERTICAL' | 'HORIZONTAL') {
+    orientation = newOrientation;
+  }
+
   function wasHit(coord: Coordinate): boolean {
     return coord.toString() in mapCoordinates ? mapCoordinates[coord.toString()] : false;
   }
@@ -61,6 +65,7 @@ export default function (name: string, shipSize: number): Ship {
     clearCoordinates,
     shipSize,
     getOrientation,
+    setOrientation,
     isSunk,
     hit,
   };

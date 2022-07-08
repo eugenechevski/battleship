@@ -6,7 +6,7 @@
 
 @layer components {
   .settings-btn {
-    @apply w-8 xs:w-10 h-8 xs:h-10 bg-blue-500 border-2 border-black text-xl xs:text-2xl text-center leading-normal xs:leading-relaxed rounded-full;
+    @apply w-8 xs:w-10 h-8 xs:h-10 bg-blue-500 border-2 border-black text-xl xs:text-2xl text-center leading-normal xs:leading-relaxed rounded-full cursor-pointer;
   }
 
   .selected-coordinate {

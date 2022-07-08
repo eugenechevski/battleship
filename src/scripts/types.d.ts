@@ -6,17 +6,7 @@ declare type Player = {
   board,
 };
 
-declare type Ship = {
-  getName: () => string,
-  getArrayCoordinates: () => Coordinate[],
-  wasHit: (coord: Coordinate) => boolean,
-  addCoordinate: (coord: Coordinate) => void,
-  clearCoordinates: () => void,
-  shipSize: number,
-  getOrientation: () => 'VERTICAL' | 'HORIZONTAL' | undefined,
-  isSunk: () => boolean,
-  hit: (target: Coordinate) => boolean,
-};
+declare type Ship = any;
 
 declare type Grid = (boolean | Ship)[][];
 

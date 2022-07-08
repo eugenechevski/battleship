@@ -37,7 +37,7 @@ export default function () {
   // Storage for coordinates of the last successful attack
   let notFinished: Coordinate[] = [];
 
-  function isValidToMoveShipFromTo(
+  function isValidToMoveShip(
     target: Ship,
     src: Coordinate,
     dest: Coordinate,
@@ -48,14 +48,7 @@ export default function () {
     }
 
     // Take the index of the source coordinate in the ship's array of coordinates
-    let srcIndex = -1;
-    const shipCoords = target.getArrayCoordinates();
-    for (let i = 0; i < shipCoords.length; i += 1) {
-      if (shipCoords[i][0] === src[0] && shipCoords[i][1] === src[1]) {
-        srcIndex = i;
-        break;
-      }
-    }
+    const srcIndex = getShipCellIndex(target.getArrayCoordinates(), src);
 
     // See whether the projected ship will be in boundaries
     const orientation = target.getOrientation();
@@ -126,9 +119,116 @@ export default function () {
     return projectedCoords;
   }
 
-  function moveShip(target: Ship, src: Coordinate, newCoords: Coordinate[]) {
+  function isValidToRotateShip(target: Ship, src: Coordinate): false | Coordinate[] {
+    const shipCoords = target.getArrayCoordinates();
+    const srcIndex = getShipCellIndex(shipCoords, src);
+
+    if (shipCoords.length === 1 || (srcIndex > 0 && srcIndex < shipCoords.length - 1)) {
+      return false;
+    }
+
+    let projectedCoords: Coordinate[];
+    const orientation = target.getOrientation();
+    if (orientation === 'HORIZONTAL') {
+      let projectionUpward = [];
+      let projectionDownward = [];
+      for (let i = 0; i < target.shipSize; i += 1) {
+        let rowUp = src[0] - target.shipSize + i + 1;
+        let rowDown = src[0] + target.shipSize - i - 1;
+        let col = src[1];
+        projectionUpward.push([rowUp, col]);
+        projectionDownward.push([rowDown, col]);
+      }
+
+      if (isValidProjection(projectionUpward, target, 'VERTICAL')) {
+        projectedCoords = projectionUpward;
+      } else if (isValidProjection(projectionDownward, target, 'VERTICAL')) {
+        projectedCoords = projectionDownward;
+        projectedCoords.reverse();
+      } else {
+        return false;
+      }
+    } else if (orientation === 'VERTICAL') {
+      let projectionLeftward = [];
+      let projectionRightward = [];
+      for (let i = 0; i < target.shipSize; i += 1) {
+        let colLeft = src[1] - target.shipSize + i + 1;
+        let colRight = src[1] + target.shipSize - i - 1;
+        let row = src[0];
+        projectionLeftward.push([row, colLeft]);
+        projectionRightward.push([row, colRight]);
+      }
+
+      if (isValidProjection(projectionLeftward, target, 'HORIZONTAL')) {
+        projectedCoords = projectionLeftward;
+      } else if (isValidProjection(projectionRightward, target, 'HORIZONTAL')) {
+        projectedCoords = projectionRightward;
+        projectedCoords.reverse();
+      } else {
+        return false;
+      }
+    }
+
+    return projectedCoords;
+  }
+
+  function isValidProjection(
+    coords: Coordinate[],
+    target: Ship,
+    projectedOrientation: 'VERTICAL' | 'HORIZONTAL',
+  ): boolean {
+    if (coords[0][0] < 0 || coords[0][0] > 9 || coords[0][1] < 0 || coords[0][1] > 9) {
+      return false;
+    }
+
+    if (projectedOrientation === 'VERTICAL') {
+      if (
+        areThereAnyShipsOnTop(coords[0], target)
+        || areThereAnyShipsOnBottom(coords.slice(-1)[0], target)
+      ) {
+        return false;
+      }
+
+      for (let i = 0; i < coords.length; i += 1) {
+        if (
+          (typeof grid[coords[i][0]][coords[i][1]] !== 'boolean'
+            && grid[coords[i][0]][coords[i][1]] !== target)
+          || areThereAnyShipsOnLeft(coords[i], target)
+          || areThereAnyShipsOnRight(coords[i], target)
+        ) {
+          return false;
+        }
+      }
+    } else if (projectedOrientation === 'HORIZONTAL') {
+      if (
+        areThereAnyShipsOnLeft(coords[0], target)
+        || areThereAnyShipsOnRight(coords.slice(-1)[0], target)
+      ) {
+        return false;
+      }
+
+      for (let i = 0; i < coords.length; i += 1) {
+        if (
+          (typeof grid[coords[i][0]][coords[i][1]] !== 'boolean'
+            && grid[coords[i][0]][coords[i][1]] !== target)
+          || areThereAnyShipsOnTop(coords[i], target)
+          || areThereAnyShipsOnBottom(coords[i], target)
+        ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  function transformShip(target: Ship, newCoords: Coordinate[], newOrientation?: 'VERTICAL' | 'HORIZONTAL') {
     // Update the internal state
-    let oldCoords = target.getArrayCoordinates();
+    if (newOrientation !== undefined) {
+      target.setOrientation(newOrientation);
+    }
+
+    const oldCoords = target.getArrayCoordinates();
     target.clearCoordinates();
     for (let i = 0; i < oldCoords.length; i += 1) {
       grid[oldCoords[i][0]][oldCoords[i][1]] = true;
@@ -139,6 +239,18 @@ export default function () {
       thisGridMap[newCoords[i][0] * 10 + newCoords[i][1]] = target;
       target.addCoordinate(newCoords[i]);
     }
+  }
+
+  function getShipCellIndex(shipCoords: Coordinate[], coord: Coordinate): number {
+    let srcIndex = -1;
+    for (let i = 0; i < shipCoords.length; i += 1) {
+      if (shipCoords[i][0] === coord[0] && shipCoords[i][1] === coord[1]) {
+        srcIndex = i;
+        break;
+      }
+    }
+
+    return srcIndex;
   }
 
   function areThereAnyShipsOnLeft(coord: Coordinate, target: Ship): boolean {
@@ -739,7 +851,8 @@ export default function () {
     getEnemyGridMap,
     updateGridView,
     updateNotFinished,
-    isValidToMoveShipFromTo,
-    moveShip,
+    isValidToMoveShip,
+    isValidToRotateShip,
+    transformShip,
   };
 }

@@ -294,7 +294,7 @@ export default function () {
         && !source.hasAttribute('name')
         && DOMVars.selectedShip !== undefined
       ) {
-        controller.moveShipRequested(DOMVars.selectedShip, DOMVars.selectedCoord, [
+        controller.transformShipRequested(DOMVars.selectedShip, DOMVars.selectedCoord, [
           Number(source.id.charAt(0)),
           Number(source.id.charAt(1)),
         ]);
@@ -327,6 +327,17 @@ export default function () {
 
       if (source.id === 'game-play-button') {
         loadGamePlayScene();
+      }
+    });
+
+    document.body.addEventListener('dblclick', (event) => {
+      const source = <Element>event.target;
+
+      if (source.hasAttribute('name')) {
+        controller.transformShipRequested(controller.getSelectedShip(source.getAttribute('name')), [
+          Number(source.id.charAt(0)),
+          Number(source.id.charAt(1)),
+        ]);
       }
     });
   }
