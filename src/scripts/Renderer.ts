@@ -307,6 +307,10 @@ export default function () {
         setSelectedCoord([Number(source.id.charAt(0)), Number(source.id.charAt(1))]);
         drawSelectionOfShip(DOMVars.selectedShip.getArrayCoordinates());
         drawSelectionOfCoordinate(DOMVars.selectedCoord);
+
+        if (window.innerWidth < 768) {
+          document.querySelector('.icon-rotation').classList.remove('hidden');
+        }
       }
 
       if (source.tagName === 'LI') {
@@ -327,6 +331,13 @@ export default function () {
 
       if (source.id === 'game-play-button') {
         loadGamePlayScene();
+      }
+
+      if (source.classList.contains('icon-rotation')) {
+        controller.transformShipRequested(
+          DOMVars.selectedShip,
+          DOMVars.selectedCoord,
+        );
       }
     });
 
