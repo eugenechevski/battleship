@@ -339,6 +339,10 @@ export default function () {
           DOMVars.selectedCoord,
         );
       }
+
+      if (source.classList.contains('done-button')) {
+        controller.setupComplete();
+      }
     });
 
     document.body.addEventListener('dblclick', (event) => {

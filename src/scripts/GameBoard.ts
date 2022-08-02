@@ -1,8 +1,12 @@
+/* eslint-disable no-eval */
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-use-before-define */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-undef */
 import Ship from './Ship';
+import Generator from './Generator';
+import TransformationValidator from './TransformationValidator';
 
 export default function () {
   const ships: { [index: string]: Ship } = {
@@ -23,206 +27,21 @@ export default function () {
     'Submarine 0': 'S0',
     'Submarine 1': 'S1',
   };
-  // Player's view of his board
-  const grid: Grid = createGrid();
+
+  const grid: Grid = createGrid(Generator().generateRandomCoords());
   const gridView: string[][] = createGridView();
-  // Internal view of the enemy's board
-  const possibleAttacksOnEnemyGrid = createPossibleAttacksSet();
-  // Storage for valid possible attacks
-  const enemyGridMap = createMapOfEnemyGrid();
-  // The map of the grid of the player
   const thisGridMap = createMapOfThisGrid();
-  // The count of the player's destroyed ships
+  const transformValidator = TransformationValidator(thisGridMap);
+  const enemyGridMap = createMapOfEnemyGrid();
+  const possibleAttacksOnEnemyGrid = createPossibleAttacksSet();
   let numberOfShipsAlive = 7;
-  // Storage for coordinates of the last successful attack
   let notFinished: Coordinate[] = [];
 
-  function isValidToMoveShip(
+  function transformShip(
     target: Ship,
-    src: Coordinate,
-    dest: Coordinate,
-  ): false | Coordinate[] {
-    // Check whether the destination coordinate has a ship already
-    if (typeof grid[dest[0]][dest[1]] !== 'boolean') {
-      return false;
-    }
-
-    // Take the index of the source coordinate in the ship's array of coordinates
-    const srcIndex = getShipCellIndex(target.getArrayCoordinates(), src);
-
-    // See whether the projected ship will be in boundaries
-    const orientation = target.getOrientation();
-    const { shipSize } = target;
-    if (
-      (orientation === 'HORIZONTAL'
-        && (dest[1] - srcIndex < 0 || dest[1] + (shipSize - srcIndex - 1) > 9))
-      || (orientation === 'VERTICAL'
-        && (dest[0] - srcIndex < 0 || dest[0] + (shipSize - srcIndex - 1) > 9))
-    ) {
-      return false;
-    }
-
-    // See whether the projected position is valid
-    const projectedCoords = [];
-    if (orientation === 'HORIZONTAL') {
-      if (
-        areThereAnyShipsOnLeft([dest[0], dest[1] - srcIndex], target)
-        || areThereAnyShipsOnRight([dest[0], dest[1] + (shipSize - srcIndex - 1)], target)
-      ) {
-        return false;
-      }
-
-      for (let i = 0; i < shipSize; i += 1) {
-        const row = dest[0];
-        const col = dest[1] - srcIndex + i;
-        if (
-          (typeof grid[row][col] !== 'boolean' && grid[row][col] !== target)
-          || areThereAnyShipsOnTop([row, col], target)
-          || areThereAnyShipsOnBottom([row, col], target)
-        ) {
-          return false;
-        }
-        projectedCoords.push([row, col]);
-      }
-    } else if (orientation === 'VERTICAL') {
-      if (
-        areThereAnyShipsOnTop([dest[0] - srcIndex, dest[1]], target)
-        || areThereAnyShipsOnBottom([dest[0] + (shipSize - srcIndex - 1), dest[1]], target)
-      ) {
-        return false;
-      }
-
-      for (let i = 0; i < shipSize; i += 1) {
-        const row = dest[0] - srcIndex + i;
-        const col = dest[1];
-        if (
-          (typeof grid[row][col] !== 'boolean' && grid[row][col] !== target)
-          || areThereAnyShipsOnLeft([row, col], target)
-          || areThereAnyShipsOnRight([row, col], target)
-        ) {
-          return false;
-        }
-        projectedCoords.push([row, col]);
-      }
-    } else if (
-      // Sub-marine
-      areThereAnyShipsOnTop([dest[0], dest[1]], target)
-      || areThereAnyShipsOnLeft([dest[0], dest[1]], target)
-      || areThereAnyShipsOnBottom([dest[0], dest[1]], target)
-      || areThereAnyShipsOnRight([dest[0], dest[1]], target)
-    ) {
-      return false;
-    } else {
-      projectedCoords.push(dest);
-    }
-
-    return projectedCoords;
-  }
-
-  function isValidToRotateShip(target: Ship, src: Coordinate): false | Coordinate[] {
-    const shipCoords = target.getArrayCoordinates();
-    const srcIndex = getShipCellIndex(shipCoords, src);
-
-    if (shipCoords.length === 1 || (srcIndex > 0 && srcIndex < shipCoords.length - 1)) {
-      return false;
-    }
-
-    let projectedCoords: Coordinate[];
-    const orientation = target.getOrientation();
-    if (orientation === 'HORIZONTAL') {
-      let projectionUpward = [];
-      let projectionDownward = [];
-      for (let i = 0; i < target.shipSize; i += 1) {
-        let rowUp = src[0] - target.shipSize + i + 1;
-        let rowDown = src[0] + target.shipSize - i - 1;
-        let col = src[1];
-        projectionUpward.push([rowUp, col]);
-        projectionDownward.push([rowDown, col]);
-      }
-
-      if (isValidProjection(projectionUpward, target, 'VERTICAL')) {
-        projectedCoords = projectionUpward;
-      } else if (isValidProjection(projectionDownward, target, 'VERTICAL')) {
-        projectedCoords = projectionDownward;
-        projectedCoords.reverse();
-      } else {
-        return false;
-      }
-    } else if (orientation === 'VERTICAL') {
-      let projectionLeftward = [];
-      let projectionRightward = [];
-      for (let i = 0; i < target.shipSize; i += 1) {
-        let colLeft = src[1] - target.shipSize + i + 1;
-        let colRight = src[1] + target.shipSize - i - 1;
-        let row = src[0];
-        projectionLeftward.push([row, colLeft]);
-        projectionRightward.push([row, colRight]);
-      }
-
-      if (isValidProjection(projectionLeftward, target, 'HORIZONTAL')) {
-        projectedCoords = projectionLeftward;
-      } else if (isValidProjection(projectionRightward, target, 'HORIZONTAL')) {
-        projectedCoords = projectionRightward;
-        projectedCoords.reverse();
-      } else {
-        return false;
-      }
-    }
-
-    return projectedCoords;
-  }
-
-  function isValidProjection(
-    coords: Coordinate[],
-    target: Ship,
-    projectedOrientation: 'VERTICAL' | 'HORIZONTAL',
-  ): boolean {
-    if (coords[0][0] < 0 || coords[0][0] > 9 || coords[0][1] < 0 || coords[0][1] > 9) {
-      return false;
-    }
-
-    if (projectedOrientation === 'VERTICAL') {
-      if (
-        areThereAnyShipsOnTop(coords[0], target)
-        || areThereAnyShipsOnBottom(coords.slice(-1)[0], target)
-      ) {
-        return false;
-      }
-
-      for (let i = 0; i < coords.length; i += 1) {
-        if (
-          (typeof grid[coords[i][0]][coords[i][1]] !== 'boolean'
-            && grid[coords[i][0]][coords[i][1]] !== target)
-          || areThereAnyShipsOnLeft(coords[i], target)
-          || areThereAnyShipsOnRight(coords[i], target)
-        ) {
-          return false;
-        }
-      }
-    } else if (projectedOrientation === 'HORIZONTAL') {
-      if (
-        areThereAnyShipsOnLeft(coords[0], target)
-        || areThereAnyShipsOnRight(coords.slice(-1)[0], target)
-      ) {
-        return false;
-      }
-
-      for (let i = 0; i < coords.length; i += 1) {
-        if (
-          (typeof grid[coords[i][0]][coords[i][1]] !== 'boolean'
-            && grid[coords[i][0]][coords[i][1]] !== target)
-          || areThereAnyShipsOnTop(coords[i], target)
-          || areThereAnyShipsOnBottom(coords[i], target)
-        ) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  function transformShip(target: Ship, newCoords: Coordinate[], newOrientation?: 'VERTICAL' | 'HORIZONTAL') {
+    newCoords: Coordinate[],
+    newOrientation?: 'VERTICAL' | 'HORIZONTAL',
+  ) {
     // Update the internal state
     if (newOrientation !== undefined) {
       target.setOrientation(newOrientation);
@@ -239,92 +58,6 @@ export default function () {
       thisGridMap[newCoords[i][0] * 10 + newCoords[i][1]] = target;
       target.addCoordinate(newCoords[i]);
     }
-  }
-
-  function getShipCellIndex(shipCoords: Coordinate[], coord: Coordinate): number {
-    let srcIndex = -1;
-    for (let i = 0; i < shipCoords.length; i += 1) {
-      if (shipCoords[i][0] === coord[0] && shipCoords[i][1] === coord[1]) {
-        srcIndex = i;
-        break;
-      }
-    }
-
-    return srcIndex;
-  }
-
-  function areThereAnyShipsOnLeft(coord: Coordinate, target: Ship): boolean {
-    const row = coord[0];
-    const col = coord[1];
-
-    const leftTop = (row - 1) * 10 + col - 1;
-    const leftMiddle = row * 10 + col - 1;
-    const leftBottom = (row + 1) * 10 + col - 1;
-
-    return (
-      col !== 0
-      && ((row > 0 && typeof thisGridMap[leftTop] !== 'boolean' && thisGridMap[leftTop] !== target)
-        || (typeof thisGridMap[leftMiddle] !== 'boolean' && thisGridMap[leftMiddle] !== target)
-        || (row < 9
-          && typeof thisGridMap[leftBottom] !== 'boolean'
-          && thisGridMap[leftBottom] !== target))
-    );
-  }
-
-  function areThereAnyShipsOnRight(coord: Coordinate, target: Ship): boolean {
-    const row = coord[0];
-    const col = coord[1];
-
-    const rightTop = (row - 1) * 10 + col + 1;
-    const rightMiddle = row * 10 + col + 1;
-    const rightBottom = (row + 1) * 10 + col + 1;
-
-    return (
-      col !== 9
-      && ((row > 0
-        && typeof thisGridMap[rightTop] !== 'boolean'
-        && thisGridMap[rightTop] !== target)
-        || (typeof thisGridMap[rightMiddle] !== 'boolean' && thisGridMap[rightMiddle] !== target)
-        || (row < 9
-          && typeof thisGridMap[rightBottom] !== 'boolean'
-          && thisGridMap[rightBottom] !== target))
-    );
-  }
-
-  function areThereAnyShipsOnTop(coord: Coordinate, target: Ship): boolean {
-    const row = coord[0];
-    const col = coord[1];
-
-    const topLeft = (row - 1) * 10 + col - 1;
-    const topCenter = (row - 1) * 10 + col;
-    const topRight = (row - 1) * 10 + col + 1;
-
-    return (
-      row !== 0
-      && ((col > 0 && typeof thisGridMap[topLeft] !== 'boolean' && thisGridMap[topLeft] !== target)
-        || (typeof thisGridMap[topCenter] !== 'boolean' && thisGridMap[topCenter] !== target)
-        || (col < 9 && typeof thisGridMap[topRight] !== 'boolean' && thisGridMap[topRight] !== target))
-    );
-  }
-
-  function areThereAnyShipsOnBottom(coord: Coordinate, target: Ship): boolean {
-    const row = coord[0];
-    const col = coord[1];
-
-    const bottomLeft = (row + 1) * 10 + col - 1;
-    const bottomCenter = (row + 1) * 10 + col;
-    const bottomRight = (row + 1) * 10 + col + 1;
-
-    return (
-      row !== 9
-      && ((col > 0
-        && typeof thisGridMap[bottomLeft] !== 'boolean'
-        && thisGridMap[bottomLeft] !== target)
-        || (typeof thisGridMap[bottomCenter] !== 'boolean' && thisGridMap[bottomCenter] !== target)
-        || (col < 9
-          && typeof thisGridMap[bottomRight] !== 'boolean'
-          && thisGridMap[bottomRight] !== target))
-    );
   }
 
   function areSunk(): boolean {
@@ -364,10 +97,6 @@ export default function () {
     return enemyGridMap;
   }
 
-  function getThisGridMap(): { [index: number]: boolean | Ship } {
-    return thisGridMap;
-  }
-
   function createMapOfThisGrid(): { [index: number]: boolean | Ship } {
     const thisMap: { [index: number]: boolean | Ship } = {};
     for (let row = 0; row < 10; row += 1) {
@@ -379,37 +108,13 @@ export default function () {
     return thisMap;
   }
 
-  /**
-   * The function produces a new copy of the array that serves as the internal grid
-   * of the player's board. It populates the array with ships and boolean's 'true' value
-   * where 'true' means the cell was not hit before.
-   * @returns populated grid
-   */
-  function createGrid(): Grid {
-    const nameMap = [
-      ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
-      ['.', 'AC', '.', 'BS', 'BS', 'BS', 'BS', '.', '.', '.'],
-      ['.', 'AC', '.', '.', '.', '.', '.', '.', '.', '.'],
-      ['.', 'AC', '.', '.', '.', '.', '.', '.', 'CR', '.'],
-      ['.', 'AC', '.', 'D0', 'D0', '.', 'D1', '.', 'CR', '.'],
-      ['.', 'AC', '.', '.', '.', '.', 'D1', '.', 'CR', '.'],
-      ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
-      ['.', '.', '.', 'S0', '.', '.', '.', '.', '.', '.'],
-      ['.', '.', '.', '.', '.', 'S1', '.', '.', '.', '.'],
-      ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'],
-    ];
-
+  function createFreshGrid(): Grid {
     const outputGrid: Grid = [];
+
     for (let row = 0; row < 10; row += 1) {
       outputGrid.push([]);
       for (let col = 0; col < 10; col += 1) {
-        if (nameMap[row][col] === '.') {
-          outputGrid[row].push(true);
-        } else {
-          const ship = ships[nameMap[row][col]];
-          ship.addCoordinate(<Coordinate>[row, col]);
-          outputGrid[row].push(ship);
-        }
+        outputGrid[row].push(true);
       }
     }
 
@@ -417,8 +122,43 @@ export default function () {
   }
 
   /**
-   * TODO
+   * The function produces a new copy of the array that serves as the internal grid
+   * of the player's board. It populates the array with ships and boolean's 'true' value
+   * where 'true' means the cell was not hit before.
+   * @returns populated grid
    */
+  function createGrid(randomCoords: Coordinate[][]): Grid {
+    const freshGrid: Grid = createFreshGrid();
+
+    for (let i = 0; i < randomCoords.length; i += 1) {
+      let ship: Ship;
+
+      if (randomCoords[i].length === 5) {
+        ship = ships.AC;
+      } else if (randomCoords[i].length === 4) {
+        ship = ships.BS;
+      } else if (randomCoords[i].length === 3) {
+        ship = ships.CR;
+      } else if (randomCoords[i].length === 2 && i === 3) {
+        ship = ships.D0;
+      } else if (randomCoords[i].length === 2 && i === 4) {
+        ship = ships.D1;
+      } else if (randomCoords[i].length === 1 && i === 5) {
+        ship = ships.S0;
+      } else if (randomCoords[i].length === 1 && i === 6) {
+        ship = ships.S1;
+      }
+
+      for (let j = 0; j < randomCoords[i].length; j += 1) {
+        const coord = randomCoords[i][j];
+        ship.addCoordinate(coord);
+        freshGrid[coord[0]][coord[1]] = ship;
+      }
+    }
+
+    return freshGrid;
+  }
+
   function createPossibleAttacksSet(): Set<number> {
     const possibleAttacks = new Set<number>();
     for (let row = 0; row < 10; row += 1) {
@@ -851,8 +591,7 @@ export default function () {
     getEnemyGridMap,
     updateGridView,
     updateNotFinished,
-    isValidToMoveShip,
-    isValidToRotateShip,
+    transformValidator,
     transformShip,
   };
 }

@@ -6,6 +6,7 @@ export default function Controller() {
   let status: 'PLAYING' | 'PAUSED' | 'NOT_PLAYING';
   let currentPlayer: Player;
   let nextPlayer: Player;
+  let doubleSetup: boolean;
 
   function init(self: Controller) {
     renderer.init(self);
@@ -15,7 +16,18 @@ export default function Controller() {
     status = 'PLAYING';
     currentPlayer = Player(false);
     nextPlayer = Player(againstComputer);
+    doubleSetup = !againstComputer;
     renderer.loadGameSetupScene(currentPlayer.board.ships);
+  }
+
+  function setupComplete(): void {
+    if (doubleSetup) {
+      renderer.loadGameSetupScene(nextPlayer.board.ships);
+      renderer.resetSelectedShip();
+      doubleSetup = false;
+    } else {
+      // TODO
+    }
   }
 
   function pause(): void {
@@ -36,7 +48,11 @@ export default function Controller() {
 
   function transformShipRequested(target: Ship, src: Coordinate, dest?: Coordinate): void {
     if (dest !== undefined) {
-      const result = currentPlayer.board.isValidToMoveShip(target, src, dest);
+      const result = currentPlayer.board.transformValidator.isValidToTranslateShip(
+        target,
+        src,
+        dest,
+      );
 
       if (result) {
         const oldCoords = target.getArrayCoordinates();
@@ -54,7 +70,7 @@ export default function Controller() {
         renderer.drawSelectionOfCoordinate(dest);
       }
     } else {
-      const result = currentPlayer.board.isValidToRotateShip(target, src);
+      const result = currentPlayer.board.transformValidator.isValidToRotateShip(target, src);
 
       if (result) {
         const oldCoords = target.getArrayCoordinates();
@@ -82,5 +98,6 @@ export default function Controller() {
     start,
     getSelectedShip,
     transformShipRequested,
+    setupComplete,
   };
 }
