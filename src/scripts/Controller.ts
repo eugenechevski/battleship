@@ -26,7 +26,8 @@ export default function Controller() {
       renderer.resetSelectedShip();
       doubleSetup = false;
     } else {
-      // TODO
+      // Load the game play scene
+      renderer.loadGamePlayScene(currentPlayer.board.ships);
     }
   }
 
@@ -57,13 +58,14 @@ export default function Controller() {
       if (result) {
         const oldCoords = target.getArrayCoordinates();
         currentPlayer.board.transformShip(target, result);
-        renderer.eraseShip(oldCoords, target.getOrientation());
+        renderer.eraseShip(oldCoords, 'setup-board', target.getOrientation());
         renderer.eraseSelectionOfShip(oldCoords);
         renderer.eraseSelectionOfCoordinate(src);
         renderer.setSelectedCoord(dest);
         renderer.drawShip(
           result,
           currentPlayer.board.tableName[target.getName()],
+          'setup-board',
           target.getOrientation(),
         );
         renderer.drawSelectionOfShip(target.getArrayCoordinates());
@@ -74,7 +76,7 @@ export default function Controller() {
 
       if (result) {
         const oldCoords = target.getArrayCoordinates();
-        renderer.eraseShip(oldCoords, target.getOrientation());
+        renderer.eraseShip(oldCoords, 'setup-board', target.getOrientation());
         currentPlayer.board.transformShip(
           target,
           result,
@@ -83,6 +85,7 @@ export default function Controller() {
         renderer.drawShip(
           result,
           currentPlayer.board.tableName[target.getName()],
+          'setup-board',
           target.getOrientation(),
         );
       }

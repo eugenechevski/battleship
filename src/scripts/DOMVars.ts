@@ -4,4 +4,7 @@ export namespace DOMVars{
   export let selectedShip: Ship
   export let selectedCoord: Coordinate;
   export let drag: boolean;
+  export let timer: NodeJS.Timer;
+  export let clock: number;
+  export let isPaused: boolean;
 }

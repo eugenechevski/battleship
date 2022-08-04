@@ -4,6 +4,27 @@ import { DOMVars } from './DOMVars';
 export default function () {
   let controller: Controller;
 
+  // TODO: add the timer control
+  function resumeClock(): void {
+    DOMVars.isPaused = false;
+  }
+
+  function pauseClock(): void {
+    DOMVars.isPaused = true;
+  }
+
+  function startClock(): void {
+    DOMVars.clock = 0;
+    DOMVars.timer = setInterval(() => {
+      if (!DOMVars.isPaused) {
+        DOMVars.clock += 1;
+        document.querySelectorAll('.game-timer span')[1].innerHTML = `${`${Math.floor(
+          DOMVars.clock / 60,
+        )}`.padStart(2, '0')}:${`${Math.floor(DOMVars.clock % 60)}`.padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+
   function loadGameMenuScene(): void {
     document.body.children[1].remove();
     document.body.insertBefore(
@@ -20,7 +41,7 @@ export default function () {
     );
   }
 
-  function loadGameSetupScene(initialGrid?: { [index: string]: Ship }): void {
+  function loadGameSetupScene(ships?: ShipMap): void {
     document.body.children[1].remove();
 
     const clone = DOMNodes.gameSetupScene.cloneNode(true);
@@ -29,14 +50,14 @@ export default function () {
     document.body.insertBefore(clone, document.body.lastElementChild);
     document.querySelector('.board-template').classList.add('setup-board');
 
-    const shipAliases = Object.keys(initialGrid);
+    const shipAliases = Object.keys(ships);
     for (let i = 0; i < shipAliases.length; i += 1) {
-      const ship = initialGrid[shipAliases[i]];
-      drawShip(ship.getArrayCoordinates(), shipAliases[i], ship.getOrientation());
+      const ship = ships[shipAliases[i]];
+      drawShip(ship.getArrayCoordinates(), shipAliases[i], 'setup-board', ship.getOrientation());
     }
   }
 
-  function loadGamePlayScene(): void {
+  function loadGamePlayScene(ships?: ShipMap): void {
     document.body.children[1].remove();
 
     const clone = DOMNodes.gamePlayScene.cloneNode(true);
@@ -45,170 +66,211 @@ export default function () {
     document.body.insertBefore(clone, document.body.lastElementChild);
     document.body.querySelector('.game-play').children[1].children[0].appendChild(cloneBoard1);
     document.body.querySelector('.game-play').children[1].children[2].appendChild(cloneBoard2);
+    const boards = document.querySelectorAll('.board-template');
+    boards[0].classList.add('game-play-board', 'left-board');
+    boards[1].classList.add('game-play-board', 'right-board');
+
+    const shipAliases = Object.keys(ships);
+    for (let i = 0; i < shipAliases.length; i += 1) {
+      const ship = ships[shipAliases[i]];
+      drawShip(ship.getArrayCoordinates(), shipAliases[i], 'left-board', ship.getOrientation());
+    }
+
+    startClock();
+  }
+
+  function eraseTopBorder(coords: Coordinate, containerClass: string) {
+    if (coords[0] > 0) {
+      document
+        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
+        .classList.remove('border-b-4', 'border-b-black');
+      document
+        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
+        .classList.add('border-b-2');
+    }
     document
-      .querySelectorAll('.board-template')
-      .forEach((el) => el.classList.add('game-play-board'));
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .removeAttribute('name');
   }
 
-  function eraseTopBorder(coords: Coordinate) {
-    if (coords[0] > 0) {
-      document
-        .getElementById(`${coords[0] - 1}${coords[1]}`)
-        .classList.remove('border-b-4', 'border-b-black');
-      document.getElementById(`${coords[0] - 1}${coords[1]}`).classList.add('border-b-2');
-    }
-    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
-  }
-
-  function eraseBottomBorder(coords: Coordinate) {
+  function eraseBottomBorder(coords: Coordinate, containerClass: string) {
     if (coords[0] < 9) {
       document
-        .getElementById(`${coords[0]}${coords[1]}`)
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
         .classList.remove('border-b-4', 'border-b-black');
-      document.getElementById(`${coords[0]}${coords[1]}`).classList.add('border-b-2');
+      document
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+        .classList.add('border-b-2');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .removeAttribute('name');
   }
 
-  function eraseLeftBorder(coords: Coordinate) {
+  function eraseLeftBorder(coords: Coordinate, containerClass: string) {
     if (coords[1] > 0) {
       document
-        .getElementById(`${coords[0]}${coords[1] - 1}`)
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1] - 1}`)
         .classList.remove('border-r-4', 'border-r-black');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .removeAttribute('name');
   }
 
-  function eraseRightBorder(coords: Coordinate) {
+  function eraseRightBorder(coords: Coordinate, containerClass: string) {
     if (coords[1] < 9) {
       document
-        .getElementById(`${coords[0]}${coords[1]}`)
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
         .classList.remove('border-r-4', 'border-r-black');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).removeAttribute('name');
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .removeAttribute('name');
   }
 
-  function eraseVertical(coords: Coordinate[]) {
-    eraseTopBorder(coords[0]);
-    eraseBottomBorder(coords.slice(-1)[0]);
+  function eraseVertical(coords: Coordinate[], containerClass: string) {
+    eraseTopBorder(coords[0], containerClass);
+    eraseBottomBorder(coords.slice(-1)[0], containerClass);
 
     for (let i = 0; i < coords.length; i += 1) {
       const coord = coords[i];
-      eraseLeftBorder(coord);
-      eraseRightBorder(coord);
+      eraseLeftBorder(coord, containerClass);
+      eraseRightBorder(coord, containerClass);
     }
   }
 
-  function eraseHorizontal(coords: Coordinate[]) {
-    eraseLeftBorder(coords[0]);
-    eraseRightBorder(coords.slice(-1)[0]);
+  function eraseHorizontal(coords: Coordinate[], containerClass: string) {
+    eraseLeftBorder(coords[0], containerClass);
+    eraseRightBorder(coords.slice(-1)[0], containerClass);
 
     for (let i = 0; i < coords.length; i += 1) {
       const coord = coords[i];
-      eraseTopBorder(coord);
-      eraseBottomBorder(coord);
+      eraseTopBorder(coord, containerClass);
+      eraseBottomBorder(coord, containerClass);
     }
   }
 
-  function eraseShip(coords: Coordinate[], orientation?: 'VERTICAL' | 'HORIZONTAL') {
+  function eraseShip(
+    coords: Coordinate[],
+    containerClass: string,
+    orientation?: 'VERTICAL' | 'HORIZONTAL',
+  ) {
     if (orientation !== undefined && orientation === 'VERTICAL') {
-      eraseVertical(coords);
+      eraseVertical(coords, containerClass);
     } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
-      eraseHorizontal(coords);
+      eraseHorizontal(coords, containerClass);
     } else {
-      eraseTopBorder(coords[0]);
-      eraseBottomBorder(coords[0]);
-      eraseLeftBorder(coords[0]);
-      eraseRightBorder(coords[0]);
+      eraseTopBorder(coords[0], containerClass);
+      eraseBottomBorder(coords[0], containerClass);
+      eraseLeftBorder(coords[0], containerClass);
+      eraseRightBorder(coords[0], containerClass);
     }
   }
 
-  function drawTopBorder(coords: Coordinate, shipAlias: string) {
+  function drawTopBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
     if (coords[0] > 0) {
-      document.getElementById(`${coords[0] - 1}${coords[1]}`).classList.remove('border-b-2');
       document
-        .getElementById(`${coords[0] - 1}${coords[1]}`)
+        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
+        .classList.remove('border-b-2');
+      document
+        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
         .classList.add('border-b-4', 'border-b-black');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .setAttribute('name', shipAlias);
   }
 
-  function drawBottomBorder(coords: Coordinate, shipAlias: string) {
+  function drawBottomBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
     if (coords[0] < 9) {
-      document.getElementById(`${coords[0]}${coords[1]}`).classList.remove('border-b-2');
       document
-        .getElementById(`${coords[0]}${coords[1]}`)
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+        .classList.remove('border-b-2');
+      document
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
         .classList.add('border-b-4', 'border-b-black');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .setAttribute('name', shipAlias);
   }
 
-  function drawLeftBorder(coords: Coordinate, shipAlias: string) {
+  function drawLeftBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
     if (coords[1] > 0) {
       document
-        .getElementById(`${coords[0]}${coords[1] - 1}`)
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1] - 1}`)
         .classList.add('border-r-4', 'border-r-black');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .setAttribute('name', shipAlias);
   }
 
-  function drawRightBorder(coords: Coordinate, shipAlias: string) {
+  function drawRightBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
     if (coords[1] < 9) {
       document
-        .getElementById(`${coords[0]}${coords[1]}`)
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
         .classList.add('border-r-4', 'border-r-black');
     }
-    document.getElementById(`${coords[0]}${coords[1]}`).setAttribute('name', shipAlias);
+    document
+      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+      .setAttribute('name', shipAlias);
   }
 
-  function drawVertical(coords: Coordinate[], shipAlias: string) {
-    drawTopBorder(coords[0], shipAlias);
-    drawBottomBorder(coords.slice(-1)[0], shipAlias);
+  function drawVertical(coords: Coordinate[], shipAlias: string, containerClass: string) {
+    drawTopBorder(coords[0], shipAlias, containerClass);
+    drawBottomBorder(coords.slice(-1)[0], shipAlias, containerClass);
 
     for (let i = 0; i < coords.length; i += 1) {
       const coord = coords[i];
-      drawLeftBorder(coord, shipAlias);
-      drawRightBorder(coord, shipAlias);
+      drawLeftBorder(coord, shipAlias, containerClass);
+      drawRightBorder(coord, shipAlias, containerClass);
     }
   }
 
-  function drawHorizontal(coords: Coordinate[], shipAlias: string) {
-    drawLeftBorder(coords[0], shipAlias);
-    drawRightBorder(coords.slice(-1)[0], shipAlias);
+  function drawHorizontal(coords: Coordinate[], shipAlias: string, containerClass: string) {
+    drawLeftBorder(coords[0], shipAlias, containerClass);
+    drawRightBorder(coords.slice(-1)[0], shipAlias, containerClass);
 
     for (let i = 0; i < coords.length; i += 1) {
       const coord = coords[i];
-      drawTopBorder(coord, shipAlias);
-      drawBottomBorder(coord, shipAlias);
+      drawTopBorder(coord, shipAlias, containerClass);
+      drawBottomBorder(coord, shipAlias, containerClass);
     }
   }
 
   function drawShip(
     coords: Coordinate[],
     shipAlias: string,
+    containerClass: string,
     orientation?: 'VERTICAL' | 'HORIZONTAL',
   ) {
     if (orientation !== undefined && orientation === 'VERTICAL') {
-      drawVertical(coords, shipAlias);
+      drawVertical(coords, shipAlias, containerClass);
     } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
-      drawHorizontal(coords, shipAlias);
+      drawHorizontal(coords, shipAlias, containerClass);
     } else {
-      drawTopBorder(coords[0], shipAlias);
-      drawBottomBorder(coords[0], shipAlias);
-      drawLeftBorder(coords[0], shipAlias);
-      drawRightBorder(coords[0], shipAlias);
+      drawTopBorder(coords[0], shipAlias, containerClass);
+      drawBottomBorder(coords[0], shipAlias, containerClass);
+      drawLeftBorder(coords[0], shipAlias, containerClass);
+      drawRightBorder(coords[0], shipAlias, containerClass);
     }
   }
 
   function eraseSelectionOfShip(coords: Coordinate[]) {
     for (let i = 0; i < coords.length; i += 1) {
-      document.getElementById(`${coords[i][0]}${coords[i][1]}`).classList.remove('selected-ship');
+      document
+        .querySelector(`.setup-board .R${coords[i][0]}C${coords[i][1]}`)
+        .classList.remove('selected-ship');
     }
   }
 
   function drawSelectionOfShip(coords: Coordinate[]) {
     for (let i = 0; i < coords.length; i += 1) {
-      document.getElementById(`${coords[i][0]}${coords[i][1]}`).classList.add('selected-ship');
+      document
+        .querySelector(`.setup-board .R${coords[i][0]}C${coords[i][1]}`)
+        .classList.add('selected-ship');
     }
   }
 
@@ -224,12 +286,18 @@ export default function () {
   }
 
   function drawSelectionOfCoordinate(target: Coordinate): void {
-    document.getElementById(`${target[0]}${target[1]}`).classList.remove('selected-ship');
-    document.getElementById(`${target[0]}${target[1]}`).classList.add('selected-coordinate');
+    document
+      .querySelector(`.setup-board .R${target[0]}C${target[1]}`)
+      .classList.remove('selected-ship');
+    document
+      .querySelector(`.setup-board .R${target[0]}C${target[1]}`)
+      .classList.add('selected-coordinate');
   }
 
   function eraseSelectionOfCoordinate(target: Coordinate): void {
-    document.getElementById(`${target[0]}${target[1]}`).classList.remove('selected-coordinate');
+    document
+      .querySelector(`.setup-board .R${target[0]}C${target[1]}`)
+      .classList.remove('selected-coordinate');
   }
 
   function resetSelectedShip(): void {
@@ -250,9 +318,23 @@ export default function () {
 
     for (let col = 1; col < 11; col += 1) {
       for (let row = 1; row < 11; row += 1) {
-        cells[col * 11 + row].id = `${row - 1}${col - 1}`;
+        cells[col * 11 + row].classList.add(`R${row - 1}C${col - 1}`);
       }
     }
+  }
+
+  function extractCoordsFromClass(source: Element): Coordinate {
+    let token = '';
+    const values = [...source.classList.values()];
+
+    for (let i = 0; i < values.length; i += 1) {
+      if (values[i].startsWith('R')) {
+        token = values[i];
+        break;
+      }
+    }
+
+    return [Number(token.charAt(1)), Number(token.charAt(3))];
   }
 
   function initNodes() {
@@ -289,22 +371,27 @@ export default function () {
       }
 
       if (
-        source.classList.contains('cell')
+        source.parentElement.classList.contains('setup-board')
+        && source.classList.contains('cell')
         && source.classList.contains('clicked')
         && !source.hasAttribute('name')
         && DOMVars.selectedShip !== undefined
       ) {
-        controller.transformShipRequested(DOMVars.selectedShip, DOMVars.selectedCoord, [
-          Number(source.id.charAt(0)),
-          Number(source.id.charAt(1)),
-        ]);
-      } else if (source.hasAttribute('name')) {
+        controller.transformShipRequested(
+          DOMVars.selectedShip,
+          DOMVars.selectedCoord,
+          extractCoordsFromClass(source),
+        );
+      } else if (
+        source.parentElement.classList.contains('setup-board')
+        && source.hasAttribute('name')
+      ) {
         if (DOMVars.selectedShip !== undefined) {
           eraseSelectionOfShip(DOMVars.selectedShip.getArrayCoordinates());
           eraseSelectionOfCoordinate(DOMVars.selectedCoord);
         }
         setSelectedShip(controller.getSelectedShip(source.getAttribute('name')));
-        setSelectedCoord([Number(source.id.charAt(0)), Number(source.id.charAt(1))]);
+        setSelectedCoord(extractCoordsFromClass(source));
         drawSelectionOfShip(DOMVars.selectedShip.getArrayCoordinates());
         drawSelectionOfCoordinate(DOMVars.selectedCoord);
 
@@ -334,10 +421,7 @@ export default function () {
       }
 
       if (source.classList.contains('icon-rotation')) {
-        controller.transformShipRequested(
-          DOMVars.selectedShip,
-          DOMVars.selectedCoord,
-        );
+        controller.transformShipRequested(DOMVars.selectedShip, DOMVars.selectedCoord);
       }
 
       if (source.classList.contains('done-button')) {
@@ -349,10 +433,10 @@ export default function () {
       const source = <Element>event.target;
 
       if (source.hasAttribute('name')) {
-        controller.transformShipRequested(controller.getSelectedShip(source.getAttribute('name')), [
-          Number(source.id.charAt(0)),
-          Number(source.id.charAt(1)),
-        ]);
+        controller.transformShipRequested(
+          controller.getSelectedShip(source.getAttribute('name')),
+          extractCoordsFromClass(source),
+        );
       }
     });
   }
@@ -374,6 +458,7 @@ export default function () {
   return {
     init,
     loadGameSetupScene,
+    loadGamePlayScene,
     drawShip,
     drawSelectionOfShip,
     drawSelectionOfCoordinate,

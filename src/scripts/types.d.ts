@@ -22,6 +22,7 @@ declare type GeneratedPosition = {
   randomRow: number;
   randomCol: number;
 };
+declare type ShipMap = { [index: string]: Ship };
 declare type GameBoard = any;
 declare type Controller = any;
 declare type Renderer = any;
