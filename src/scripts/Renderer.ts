@@ -4,7 +4,6 @@ import { DOMVars } from './DOMVars';
 export default function () {
   let controller: Controller;
 
-  // TODO: add the timer control
   function resumeClock(): void {
     DOMVars.isPaused = false;
   }
@@ -300,6 +299,12 @@ export default function () {
       .classList.remove('selected-coordinate');
   }
 
+  function drawMissedAttack(attack: Coordinate, containerClass: string): void {
+    document
+      .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
+      ?.classList.add('cross', 'text-gray-600');
+  }
+
   function resetSelectedShip(): void {
     DOMVars.selectedCoord = undefined;
     DOMVars.selectedShip = undefined;
@@ -427,6 +432,24 @@ export default function () {
       if (source.classList.contains('done-button')) {
         controller.setupComplete();
       }
+
+      if (source.classList.contains('icon-pause')) {
+        pauseClock();
+        source.classList.remove('icon-pause');
+        source.classList.add('icon-resume');
+      } else if (source.classList.contains('icon-resume')) {
+        resumeClock();
+        source.classList.remove('icon-resume');
+        source.classList.add('icon-pause');
+      }
+
+      if (
+        source.parentElement.classList.contains('right-board')
+        && source.classList.contains('clicked')
+        && !DOMVars.isPaused
+      ) {
+        controller.attackRequested(extractCoordsFromClass(source));
+      }
     });
 
     document.body.addEventListener('dblclick', (event) => {
@@ -465,6 +488,7 @@ export default function () {
     eraseShip,
     eraseSelectionOfShip,
     eraseSelectionOfCoordinate,
+    drawMissedAttack,
     resetSelectedShip,
     setSelectedCoord,
     setSelectedShip,

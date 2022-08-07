@@ -23,6 +23,7 @@ declare type GeneratedPosition = {
   randomCol: number;
 };
 declare type ShipMap = { [index: string]: Ship };
+declare type AttackResult = 'MISSED' | 'SUNK' | 'HIT' | 'DOUBLE SHOT';
 declare type GameBoard = any;
 declare type Controller = any;
 declare type Renderer = any;

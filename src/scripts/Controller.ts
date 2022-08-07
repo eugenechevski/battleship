@@ -3,7 +3,7 @@ import Renderer from './Renderer';
 
 export default function Controller() {
   const renderer = Renderer();
-  let status: 'PLAYING' | 'PAUSED' | 'NOT_PLAYING';
+  let status: 'PLAYING'| 'NOT_PLAYING';
   let currentPlayer: Player;
   let nextPlayer: Player;
   let doubleSetup: boolean;
@@ -26,21 +26,16 @@ export default function Controller() {
       renderer.resetSelectedShip();
       doubleSetup = false;
     } else {
-      // Load the game play scene
       renderer.loadGamePlayScene(currentPlayer.board.ships);
     }
-  }
-
-  function pause(): void {
-    status = 'PAUSED';
   }
 
   function surrender(): void {
     status = 'NOT_PLAYING';
   }
 
-  function terminate(): void {
-    status = 'NOT_PLAYING';
+  function timeout(): void {
+    // TODO
   }
 
   function getSelectedShip(shipAlias: string): Ship {
@@ -92,13 +87,41 @@ export default function Controller() {
     }
   }
 
-  function newAttack(attack: Coordinate): void {}
+  function nextRound(): void {
 
-  function nextRound(): void {}
+  }
+
+  function attackRequested(attack: Coordinate): void {
+    const result: AttackResult = nextPlayer.board.receiveAttack(attack);
+
+    if (result === 'MISSED') {
+      currentPlayer.board.enemyBoardView.markAsMissed(attack);
+      nextRound();
+      // TODO
+      // draw a missed shot
+      // update the round
+      // if the game is not against computer, display next player button and \
+      // redraw boards
+      // if the game is against computer, generate attack and \
+      // draw a hit and call the same function with the generated attack as an argument
+    } else if (result === 'DOUBLE SHOT') {
+      // do nothing
+    } else if (result === 'HIT') {
+      // update the enemy board view
+      // draw a hit
+      // reset a shot timer
+    } else if (result === 'SUNK') {
+      // check if the game is over
+      // draw a sunk ship
+      // draw a hit
+      // reset a shot timer
+    }
+  }
 
   return {
     init,
     start,
+    attackRequested,
     getSelectedShip,
     transformShipRequested,
     setupComplete,

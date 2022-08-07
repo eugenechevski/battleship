@@ -5,7 +5,7 @@
 export default function () {
   const enemyGridMap = createMapOfEnemyGrid();
   const possibleAttacks = createPossibleAttacks();
-  let coordOfLastAttack: Coordinate[] = [];
+  const coordOfLastAttack: Coordinate[] = [];
 
   function getEnemyGridMap(): { [index: number]: boolean | Ship } {
     return enemyGridMap;
@@ -15,8 +15,14 @@ export default function () {
     return coordOfLastAttack;
   }
 
-  function updateCoordOfLastAttack(newValue: Coordinate[]): void {
-    coordOfLastAttack = newValue;
+  function addLastAttack(lastAttack: Coordinate): void {
+    coordOfLastAttack.push(lastAttack);
+  }
+
+  function resetLastAttacks(): void {
+    while (coordOfLastAttack.length !== 0) {
+      coordOfLastAttack.pop();
+    }
   }
 
   function createMapOfEnemyGrid(): { [index: number]: boolean | Ship } {
@@ -272,7 +278,8 @@ export default function () {
   return {
     getCoordOfLastAttack,
     getEnemyGridMap,
-    updateCoordOfLastAttack,
+    addLastAttack,
+    resetLastAttacks,
     markAroundAsMissed,
     markAsHit,
     markAsMissed,

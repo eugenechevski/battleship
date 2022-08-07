@@ -140,8 +140,8 @@ export default function () {
    * @param coord - target coordinates
    * @returns - the result of the attack
    */
-  function receiveAttack(coord: Coordinate): string {
-    let result;
+  function receiveAttack(coord: Coordinate): AttackResult {
+    let result: AttackResult;
     const row = coord[0];
     const col = coord[1];
 
@@ -159,7 +159,7 @@ export default function () {
       }
       // The enemy attacked the same coordinate that he attacked before
     } else {
-      result = 'DOUBLE-SHOT';
+      result = 'DOUBLE SHOT';
     }
 
     return result;
