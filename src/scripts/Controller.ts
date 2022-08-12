@@ -96,14 +96,20 @@ export default function Controller() {
 
     if (result === 'MISSED') {
       currentPlayer.board.enemyBoardView.markAsMissed(attack);
-      nextRound();
-      // TODO
-      // draw a missed shot
-      // update the round
-      // if the game is not against computer, display next player button and \
-      // redraw boards
-      // if the game is against computer, generate attack and \
-      // draw a hit and call the same function with the generated attack as an argument
+      if (currentPlayer.isComputer) {
+        renderer.drawMissedAttack(attack, 'left-border');
+      } else {
+        renderer.drawMissedAttack(attack, 'right-border');
+      }
+
+      let player = currentPlayer;
+      currentPlayer = nextPlayer;
+      nextPlayer = player;
+      if (nextPlayer.isComputer) {
+        attackRequested(currentPlayer.board.generateAttack());
+      } else {
+        renderer.displayNextPlayerButton();
+      }
     } else if (result === 'DOUBLE SHOT') {
       // do nothing
     } else if (result === 'HIT') {

@@ -257,6 +257,21 @@ export default function () {
     }
   }
 
+  function displayTimebar(): void {
+    document.querySelector('.next-player-btn')?.classList.add('hidden');
+    document.querySelector('.time-bar').classList.remove('hidden');
+  }
+
+  function displayNextPlayerButton(): void {
+    document.querySelector('.time-bar')?.classList.add('hidden');
+    document.querySelector('.next-player-btn')?.classList.remove('hidden');
+  }
+
+  function displayAfterGameControls(): void {
+    document.querySelector('.time-bar')?.classList.add('hidden');
+    document.querySelector('.after-game-controls')?.classList.remove('hidden');
+  }
+
   function eraseSelectionOfShip(coords: Coordinate[]) {
     for (let i = 0; i < coords.length; i += 1) {
       document
@@ -489,6 +504,9 @@ export default function () {
     eraseSelectionOfShip,
     eraseSelectionOfCoordinate,
     drawMissedAttack,
+    displayTimebar,
+    displayNextPlayerButton,
+    displayAfterGameControls,
     resetSelectedShip,
     setSelectedCoord,
     setSelectedShip,
