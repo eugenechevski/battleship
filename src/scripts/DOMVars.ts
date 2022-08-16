@@ -7,4 +7,5 @@ export namespace DOMVars{
   export let timer: NodeJS.Timer;
   export let clock: number;
   export let isPaused: boolean;
+  export let roundCount: number;
 }

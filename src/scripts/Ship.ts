@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 export default function (name: string, shipSize: number): Ship {
   const shipName = name;
-  const mapCoordinates: { [coord: string]: boolean } = {};
+  const mapOfCoords: { [coord: number]: boolean } = {};
   let arrCoordinates: Coordinate[] = [];
   let destroyedCells = shipSize;
   let orientation: 'VERTICAL' | 'HORIZONTAL' | undefined;
@@ -23,11 +23,11 @@ export default function (name: string, shipSize: number): Ship {
   }
 
   function wasHit(coord: Coordinate): boolean {
-    return coord.toString() in mapCoordinates ? mapCoordinates[coord.toString()] : false;
+    return mapOfCoords[coord[0] * 10 + coord[1]];
   }
 
   function addCoordinate(coord: Coordinate): void {
-    mapCoordinates[coord.toString()] = true;
+    mapOfCoords[coord[0] * 10 + coord[1]] = false;
     arrCoordinates.push(coord);
 
     if (arrCoordinates.length > 1) {
@@ -37,7 +37,7 @@ export default function (name: string, shipSize: number): Ship {
 
   function clearCoordinates(): void {
     for (let i = 0; i < arrCoordinates.length; i += 1) {
-      delete mapCoordinates[arrCoordinates[i].toString()];
+      delete mapOfCoords[arrCoordinates[i][0] * 10 + arrCoordinates[i][1]];
     }
     arrCoordinates = [];
   }
@@ -47,10 +47,10 @@ export default function (name: string, shipSize: number): Ship {
   }
 
   function hit(target: Coordinate): boolean {
-    const key = target.toString();
-    if (mapCoordinates[key]) {
+    const coord = target[0] * 10 + target[1];
+    if (!mapOfCoords[coord]) {
       destroyedCells -= 1;
-      mapCoordinates[key] = false;
+      mapOfCoords[coord] = true;
       return true;
     }
 

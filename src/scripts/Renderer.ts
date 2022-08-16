@@ -12,6 +12,10 @@ export default function () {
     DOMVars.isPaused = true;
   }
 
+  function stopClock(): void {
+    clearInterval(DOMVars.timer);
+  }
+
   function startClock(): void {
     DOMVars.clock = 0;
     DOMVars.timer = setInterval(() => {
@@ -24,68 +28,27 @@ export default function () {
     }, 1000);
   }
 
-  function loadGameMenuScene(): void {
-    document.body.children[1].remove();
-    document.body.insertBefore(
-      DOMNodes.gameMenuScene.cloneNode(true),
-      document.body.lastElementChild,
-    );
+  function startRoundCount(): void {
+    DOMVars.roundCount = 1;
   }
 
-  function loadCountDownScene(): void {
-    document.body.children[1].remove();
-    document.body.insertBefore(
-      DOMNodes.countDownScene.cloneNode(true),
-      document.body.lastElementChild,
-    );
-  }
-
-  function loadGameSetupScene(ships?: ShipMap): void {
-    document.body.children[1].remove();
-
-    const clone = DOMNodes.gameSetupScene.cloneNode(true);
-    const cloneBoard = DOMNodes.boardTemplate.cloneNode(true);
-    clone.childNodes[3].appendChild(cloneBoard);
-    document.body.insertBefore(clone, document.body.lastElementChild);
-    document.querySelector('.board-template').classList.add('setup-board');
-
-    const shipAliases = Object.keys(ships);
-    for (let i = 0; i < shipAliases.length; i += 1) {
-      const ship = ships[shipAliases[i]];
-      drawShip(ship.getArrayCoordinates(), shipAliases[i], 'setup-board', ship.getOrientation());
-    }
-  }
-
-  function loadGamePlayScene(ships?: ShipMap): void {
-    document.body.children[1].remove();
-
-    const clone = DOMNodes.gamePlayScene.cloneNode(true);
+  function appendFreshBoards(): void {
     const cloneBoard1 = DOMNodes.boardTemplate.cloneNode(true);
     const cloneBoard2 = DOMNodes.boardTemplate.cloneNode(true);
-    document.body.insertBefore(clone, document.body.lastElementChild);
+    document.body.querySelector('.game-play').children[1].children[0].lastChild?.remove();
+    document.body.querySelector('.game-play').children[1].children[2].lastChild?.remove();
     document.body.querySelector('.game-play').children[1].children[0].appendChild(cloneBoard1);
     document.body.querySelector('.game-play').children[1].children[2].appendChild(cloneBoard2);
     const boards = document.querySelectorAll('.board-template');
     boards[0].classList.add('game-play-board', 'left-board');
     boards[1].classList.add('game-play-board', 'right-board');
-
-    const shipAliases = Object.keys(ships);
-    for (let i = 0; i < shipAliases.length; i += 1) {
-      const ship = ships[shipAliases[i]];
-      drawShip(ship.getArrayCoordinates(), shipAliases[i], 'left-board', ship.getOrientation());
-    }
-
-    startClock();
   }
 
   function eraseTopBorder(coords: Coordinate, containerClass: string) {
     if (coords[0] > 0) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
-        .classList.remove('border-b-4', 'border-b-black');
-      document
-        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
-        .classList.add('border-b-2');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`);
+      cell.classList.remove('border-b-4', 'border-b-black', 'border-b-red-500');
+      cell.classList.add('border-b-2', 'border-b-gray-500');
     }
     document
       .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
@@ -94,12 +57,9 @@ export default function () {
 
   function eraseBottomBorder(coords: Coordinate, containerClass: string) {
     if (coords[0] < 9) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-        .classList.remove('border-b-4', 'border-b-black');
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-        .classList.add('border-b-2');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`);
+      cell.classList.remove('border-b-4', 'border-b-black', 'border-b-red-500');
+      cell.classList.add('border-b-2', 'border-b-gray-500');
     }
     document
       .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
@@ -108,9 +68,9 @@ export default function () {
 
   function eraseLeftBorder(coords: Coordinate, containerClass: string) {
     if (coords[1] > 0) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1] - 1}`)
-        .classList.remove('border-r-4', 'border-r-black');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0]}C${coords[1] - 1}`);
+      cell.classList.remove('border-r-4', 'border-r-black', 'border-r-red-500');
+      cell.classList.add('border-r-2', 'border-r-gray-500');
     }
     document
       .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
@@ -119,9 +79,9 @@ export default function () {
 
   function eraseRightBorder(coords: Coordinate, containerClass: string) {
     if (coords[1] < 9) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-        .classList.remove('border-r-4', 'border-r-black');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`);
+      cell.classList.remove('border-r-4', 'border-r-black', 'border-r-red-500');
+      cell.classList.add('border-r-2', 'border-r-gray-500');
     }
     document
       .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
@@ -167,93 +127,150 @@ export default function () {
     }
   }
 
-  function drawTopBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
+  function drawTopBorder(
+    coords: Coordinate,
+    containerClass: string,
+    color: string,
+    shipAlias?: string,
+  ) {
     if (coords[0] > 0) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
-        .classList.remove('border-b-2');
-      document
-        .querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`)
-        .classList.add('border-b-4', 'border-b-black');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`);
+      cell.classList.remove(
+        'border-b-2',
+        'border-b-gray-500',
+        'border-b-black',
+        'border-b-red-500',
+      );
+      cell.classList.add('border-b-4', `border-b-${color}`);
     }
-    document
-      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-      .setAttribute('name', shipAlias);
+
+    if (shipAlias !== undefined) {
+      document
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+        .setAttribute('name', shipAlias);
+    }
   }
 
-  function drawBottomBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
+  function drawBottomBorder(
+    coords: Coordinate,
+    containerClass: string,
+    color: string,
+    shipAlias?: string,
+  ) {
     if (coords[0] < 9) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-        .classList.remove('border-b-2');
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-        .classList.add('border-b-4', 'border-b-black');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`);
+      cell.classList.remove(
+        'border-b-2',
+        'border-b-gray-500',
+        'border-b-black',
+        'border-b-red-500',
+      );
+      cell.classList.add('border-b-4', `border-b-${color}`);
     }
-    document
-      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-      .setAttribute('name', shipAlias);
+
+    if (shipAlias !== undefined) {
+      document
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+        .setAttribute('name', shipAlias);
+    }
   }
 
-  function drawLeftBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
+  function drawLeftBorder(
+    coords: Coordinate,
+    containerClass: string,
+    color: string,
+    shipAlias?: string,
+  ) {
     if (coords[1] > 0) {
-      document
-        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1] - 1}`)
-        .classList.add('border-r-4', 'border-r-black');
+      const cell = document.querySelector(`.${containerClass} .R${coords[0]}C${coords[1] - 1}`);
+      cell.classList.remove(
+        'border-r-2',
+        'border-r-gray-500',
+        'border-r-black',
+        'border-r-red-500',
+      );
+      cell.classList.add('border-r-4', `border-r-${color}`);
     }
-    document
-      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-      .setAttribute('name', shipAlias);
-  }
 
-  function drawRightBorder(coords: Coordinate, shipAlias: string, containerClass: string) {
-    if (coords[1] < 9) {
+    if (shipAlias !== undefined) {
       document
         .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-        .classList.add('border-r-4', 'border-r-black');
-    }
-    document
-      .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
-      .setAttribute('name', shipAlias);
-  }
-
-  function drawVertical(coords: Coordinate[], shipAlias: string, containerClass: string) {
-    drawTopBorder(coords[0], shipAlias, containerClass);
-    drawBottomBorder(coords.slice(-1)[0], shipAlias, containerClass);
-
-    for (let i = 0; i < coords.length; i += 1) {
-      const coord = coords[i];
-      drawLeftBorder(coord, shipAlias, containerClass);
-      drawRightBorder(coord, shipAlias, containerClass);
+        .setAttribute('name', shipAlias);
     }
   }
 
-  function drawHorizontal(coords: Coordinate[], shipAlias: string, containerClass: string) {
-    drawLeftBorder(coords[0], shipAlias, containerClass);
-    drawRightBorder(coords.slice(-1)[0], shipAlias, containerClass);
+  function drawRightBorder(
+    coords: Coordinate,
+    containerClass: string,
+    color: string,
+    shipAlias?: string,
+  ) {
+    if (coords[1] < 9) {
+      const cell = document.querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`);
+      cell.classList.remove(
+        'border-r-2',
+        'border-r-gray-500',
+        'border-r-black',
+        'border-r-red-500',
+      );
+      cell.classList.add('border-r-4', `border-r-${color}`);
+    }
+
+    if (shipAlias !== undefined) {
+      document
+        .querySelector(`.${containerClass} .R${coords[0]}C${coords[1]}`)
+        .setAttribute('name', shipAlias);
+    }
+  }
+
+  function drawVertical(
+    coords: Coordinate[],
+    containerClass: string,
+    color: string,
+    shipAlias?: string,
+  ) {
+    drawTopBorder(coords[0], containerClass, color, shipAlias);
+    drawBottomBorder(coords.slice(-1)[0], containerClass, color, shipAlias);
 
     for (let i = 0; i < coords.length; i += 1) {
       const coord = coords[i];
-      drawTopBorder(coord, shipAlias, containerClass);
-      drawBottomBorder(coord, shipAlias, containerClass);
+      drawLeftBorder(coord, containerClass, color, shipAlias);
+      drawRightBorder(coord, containerClass, color, shipAlias);
+    }
+  }
+
+  function drawHorizontal(
+    coords: Coordinate[],
+    containerClass: string,
+    color: string,
+    shipAlias?: string,
+  ) {
+    drawLeftBorder(coords[0], containerClass, color, shipAlias);
+    drawRightBorder(coords.slice(-1)[0], containerClass, color, shipAlias);
+
+    for (let i = 0; i < coords.length; i += 1) {
+      const coord = coords[i];
+      drawTopBorder(coord, containerClass, color, shipAlias);
+      drawBottomBorder(coord, containerClass, color, shipAlias);
     }
   }
 
   function drawShip(
     coords: Coordinate[],
-    shipAlias: string,
     containerClass: string,
+    color: string,
     orientation?: 'VERTICAL' | 'HORIZONTAL',
+    shipAlias?: string,
   ) {
     if (orientation !== undefined && orientation === 'VERTICAL') {
-      drawVertical(coords, shipAlias, containerClass);
+      drawVertical(coords, containerClass, color, shipAlias);
     } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
-      drawHorizontal(coords, shipAlias, containerClass);
+      drawHorizontal(coords, containerClass, color, shipAlias);
     } else {
-      drawTopBorder(coords[0], shipAlias, containerClass);
-      drawBottomBorder(coords[0], shipAlias, containerClass);
-      drawLeftBorder(coords[0], shipAlias, containerClass);
-      drawRightBorder(coords[0], shipAlias, containerClass);
+      drawTopBorder(coords[0], containerClass, color, shipAlias);
+      drawBottomBorder(coords[0], containerClass, color, shipAlias);
+      drawLeftBorder(coords[0], containerClass, color, shipAlias);
+      drawRightBorder(coords[0], containerClass, color, shipAlias);
     }
   }
 
@@ -271,6 +288,97 @@ export default function () {
     document.querySelector('.time-bar')?.classList.add('hidden');
     document.querySelector('.after-game-controls')?.classList.remove('hidden');
   }
+
+  function displayAttackPromptMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playerName}, it's your turn to shoot the salvo!`;
+  }
+
+  function displayMissedAttackMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playerName} missed!`;
+  }
+
+  function displayDoubleShotMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playerName}, you cannot shoot the same cell twice!`;
+  }
+
+  function displayHitMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playerName} hit a ship!`;
+  }
+
+  function displaySunkMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playerName} sunk a ship!`;
+  }
+
+  function displayGameOverMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `Game is over, ${playerName} won!`;
+  }
+
+  function drawAllShips(ships: ShipMap, containerClass: string): void {
+    const shipAliases = Object.keys(ships);
+    for (let i = 0; i < shipAliases.length; i += 1) {
+      const ship: Ship = ships[shipAliases[i]];
+      drawShip(
+        ship.getArrayCoordinates(),
+        containerClass,
+        ship.isSunk() ? 'red-500' : 'black',
+        ship.getOrientation(),
+        shipAliases[i],
+      );
+    }
+  }
+
+  function redrawBoards(ships: ShipMap, grid: Grid, enemyShips: ShipMap, enemyGrid: Grid): void {
+    // Reset boards
+    appendFreshBoards();
+
+    // Draw current player's ships
+    drawAllShips(ships, 'left-board');
+
+    // Draw enemy's ships that are sunk
+    const shipAliases = Object.keys(enemyShips);
+    for (let i = 0; i < shipAliases.length; i += 1) {
+      const ship: Ship = enemyShips[shipAliases[i]];
+
+      if (ship.isSunk()) {
+        drawShip(ship.getArrayCoordinates(), 'right-board', 'red-500', ship.getOrientation());
+      }
+    }
+
+    // Draw misses and hits
+    for (let row = 0; row < 10; row += 1) {
+      for (let col = 0; col < 10; col += 1) {
+        // Misses
+
+        if (grid[row][col] === false) {
+          drawMissedAttack([row, col], 'left-board');
+        }
+
+        if (enemyGrid[row][col] === false) {
+          drawMissedAttack([row, col], 'right-board');
+        }
+
+        // Hits
+
+        if (typeof grid[row][col] !== 'boolean' && <Ship>grid[row][col].wasHit([row, col])) {
+          drawHitAttack([row, col], 'left-board');
+        }
+
+        if (
+          typeof enemyGrid[row][col] !== 'boolean'
+          && <Ship>enemyGrid[row][col].wasHit([row, col])
+        ) {
+          drawHitAttack([row, col], 'right-board');
+        }
+      }
+    }
+  }
+
+  function updateRound(): void {
+    DOMVars.roundCount += 1;
+    document.querySelector('.game-timer').children[0].innerHTML = `Round ${DOMVars.roundCount}`;
+  }
+
+  function resetTimeBar(): void {}
 
   function eraseSelectionOfShip(coords: Coordinate[]) {
     for (let i = 0; i < coords.length; i += 1) {
@@ -317,7 +425,13 @@ export default function () {
   function drawMissedAttack(attack: Coordinate, containerClass: string): void {
     document
       .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
-      ?.classList.add('cross', 'text-gray-600');
+      ?.classList.add('text-gray-500', 'icon-cross');
+  }
+
+  function drawHitAttack(attack: Coordinate, containerClass: string): void {
+    document
+      .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
+      .classList.add('text-red-500', 'icon-cross');
   }
 
   function resetSelectedShip(): void {
@@ -357,6 +471,57 @@ export default function () {
     return [Number(token.charAt(1)), Number(token.charAt(3))];
   }
 
+  function loadGameMenuScene(): void {
+    document.body.children[1].remove();
+    document.body.insertBefore(
+      DOMNodes.gameMenuScene.cloneNode(true),
+      document.body.lastElementChild,
+    );
+  }
+
+  function loadCountDownScene(): void {
+    document.body.children[1].remove();
+    document.body.insertBefore(
+      DOMNodes.countDownScene.cloneNode(true),
+      document.body.lastElementChild,
+    );
+  }
+
+  function loadGameSetupScene(ships?: ShipMap): void {
+    document.body.children[1].remove();
+
+    const clone = DOMNodes.gameSetupScene.cloneNode(true);
+    const cloneBoard = DOMNodes.boardTemplate.cloneNode(true);
+    clone.childNodes[3].appendChild(cloneBoard);
+    document.body.insertBefore(clone, document.body.lastElementChild);
+    document.querySelector('.board-template').classList.add('setup-board');
+
+    drawAllShips(ships, 'setup-board');
+  }
+
+  function loadGamePlayScene(ships?: ShipMap): void {
+    document.body.children[1].remove();
+
+    const clone = DOMNodes.gamePlayScene.cloneNode(true);
+    document.body.insertBefore(clone, document.body.lastElementChild);
+    appendFreshBoards();
+
+    const shipAliases = Object.keys(ships);
+    for (let i = 0; i < shipAliases.length; i += 1) {
+      const ship = ships[shipAliases[i]];
+      drawShip(
+        ship.getArrayCoordinates(),
+        'left-board',
+        'black',
+        ship.getOrientation(),
+        shipAliases[i],
+      );
+    }
+
+    startClock();
+    startRoundCount();
+  }
+
   function initNodes() {
     DOMNodes.gameMenuScene = <Element>document.querySelector('.game-menu');
 
@@ -379,6 +544,7 @@ export default function () {
       // # Game-menu elements
 
       if (source.className.startsWith('play-button')) {
+        // TODO: transition animation
         controller.start(DOMVars.againstComputer);
       }
 
@@ -463,7 +629,11 @@ export default function () {
         && source.classList.contains('clicked')
         && !DOMVars.isPaused
       ) {
-        controller.attackRequested(extractCoordsFromClass(source));
+        controller.attackRequested(extractCoordsFromClass(source), true);
+      }
+
+      if (source.classList.contains('next-player-btn')) {
+        controller.nextRound();
       }
     });
 
@@ -481,7 +651,9 @@ export default function () {
 
   function initVars() {
     DOMVars.timeLimit = 5;
-    DOMVars.againstComputer = true;
+    DOMVars.againstComputer = (<HTMLInputElement>(
+      document.querySelector('#playerModeSwitch')
+    ))?.checked;
     DOMVars.selectedCoord = [0, 0];
     DOMVars.drag = false;
   }
@@ -504,11 +676,23 @@ export default function () {
     eraseSelectionOfShip,
     eraseSelectionOfCoordinate,
     drawMissedAttack,
+    drawHitAttack,
     displayTimebar,
     displayNextPlayerButton,
     displayAfterGameControls,
+    displayAttackPromptMessage,
+    displayMissedAttackMessage,
+    displayDoubleShotMessage,
+    displayHitMessage,
+    displaySunkMessage,
+    displayGameOverMessage,
+    updateRound,
+    redrawBoards,
     resetSelectedShip,
     setSelectedCoord,
     setSelectedShip,
+    startClock,
+    resumeClock,
+    stopClock,
   };
 }

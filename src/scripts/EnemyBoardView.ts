@@ -25,7 +25,7 @@ export default function () {
     }
   }
 
-  function createMapOfEnemyGrid(): { [index: number]: boolean | Ship } {
+  function createMapOfEnemyGrid(): GridMap {
     const enemyMap: { [index: number]: boolean | Ship } = {};
     for (let row = 0; row < 10; row += 1) {
       for (let col = 0; col < 10; col += 1) {
@@ -230,11 +230,10 @@ export default function () {
   function generateForTheThirdCase(): Coordinate {
     const potentialMoves: Coordinate[] = [];
     const firstMove = coordOfLastAttack[0];
-    const lastMove = coordOfLastAttack[1];
+    const lastMove = coordOfLastAttack.slice(-1)[0];
 
     // Horizontal possible moves
     if (firstMove[0] === lastMove[0]) {
-      // The last move is more left than the first move
       let left: Coordinate = [firstMove[0], firstMove[1]];
       let right: Coordinate = [lastMove[0], lastMove[1]];
 
@@ -245,11 +244,11 @@ export default function () {
       }
 
       if (isValidLeft(left)) {
-        potentialMoves.push(left);
+        potentialMoves.push([left[0], left[1] - 1]);
       }
 
       if (isValidRight(right)) {
-        potentialMoves.push(right);
+        potentialMoves.push([right[0], right[1] + 1]);
       }
       // Vertical possible moves
     } else if (firstMove[1] === lastMove[1]) {
@@ -264,11 +263,11 @@ export default function () {
       }
 
       if (isValidTop(top)) {
-        potentialMoves.push(top);
+        potentialMoves.push([top[0] - 1, top[1]]);
       }
 
       if (isValidBottom(bottom)) {
-        potentialMoves.push(bottom);
+        potentialMoves.push([bottom[0] + 1, top[1]]);
       }
     }
 

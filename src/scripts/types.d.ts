@@ -2,13 +2,16 @@
 declare type Coordinate = [row: number, col: number];
 
 declare type Player = {
-  isComputer: boolean;
-  board;
+  isComputer: boolean,
+  board: GameBoard,
+  getName: () => string,
+  setName: (string) => void,
 };
 
 declare type Ship = any;
 
 declare type Grid = (boolean | Ship)[][];
+declare type GridMap = { [index: number]: boolean | Ship };
 declare type PossibilitiesSets = [Set<number>?, Set<number>?];
 declare type ShipPossibilitiesMap = {
   [row: number]: { [col: number]: PossibilitiesSets | number };
