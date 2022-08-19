@@ -4,32 +4,22 @@ import { DOMVars } from './DOMVars';
 export default function () {
   let controller: Controller;
 
-  function resumeClock(): void {
-    DOMVars.isPaused = false;
+  function updateClock(clock: number): void {
+    document.querySelectorAll('.game-timer span')[1].innerHTML = `${`${Math.floor(
+      clock / 60,
+    )}`.padStart(2, '0')}:${`${Math.floor(clock % 60)}`.padStart(2, '0')}`;
   }
 
-  function pauseClock(): void {
-    DOMVars.isPaused = true;
+  function resetClock(): void {
+    document.querySelectorAll('.game-timer span')[1].innerHTML = '';
   }
 
-  function stopClock(): void {
-    clearInterval(DOMVars.timer);
+  function updateRoundCount(roundCount: number): void {
+    document.querySelector('.game-timer').children[0].innerHTML = `Round ${roundCount}`;
   }
 
-  function startClock(): void {
-    DOMVars.clock = 0;
-    DOMVars.timer = setInterval(() => {
-      if (!DOMVars.isPaused) {
-        DOMVars.clock += 1;
-        document.querySelectorAll('.game-timer span')[1].innerHTML = `${`${Math.floor(
-          DOMVars.clock / 60,
-        )}`.padStart(2, '0')}:${`${Math.floor(DOMVars.clock % 60)}`.padStart(2, '0')}`;
-      }
-    }, 1000);
-  }
-
-  function startRoundCount(): void {
-    DOMVars.roundCount = 1;
+  function resetRoundCount(): void {
+    document.querySelector('.game-timer').children[0].innerHTML = '';
   }
 
   function appendFreshBoards(): void {
@@ -274,23 +264,38 @@ export default function () {
     }
   }
 
-  function displayTimebar(): void {
-    document.querySelector('.next-player-btn')?.classList.add('hidden');
+  function displayPauseButton(): void {
+    document.querySelector('.icon-resume').classList.add('icon-pause');
+    document.querySelector('.icon-resume').classList.remove('icon-resume');
+  }
+
+  function displayResumeButton(): void {
+    document.querySelector('.icon-pause').classList.add('icon-resume');
+    document.querySelector('.icon-pause').classList.remove('icon-pause');
+  }
+
+  function displayTimeBar(): void {
+    document.querySelector('.next-player-btn').classList.add('hidden');
+    document.querySelector('.after-game-controls').classList.add('hidden');
     document.querySelector('.time-bar').classList.remove('hidden');
   }
 
   function displayNextPlayerButton(): void {
-    document.querySelector('.time-bar')?.classList.add('hidden');
-    document.querySelector('.next-player-btn')?.classList.remove('hidden');
+    document.querySelector('.after-game-controls').classList.add('hidden');
+    document.querySelector('.time-bar').classList.add('hidden');
+    document.querySelector('.next-player-btn').classList.remove('hidden');
   }
 
   function displayAfterGameControls(): void {
-    document.querySelector('.time-bar')?.classList.add('hidden');
-    document.querySelector('.after-game-controls')?.classList.remove('hidden');
+    document.querySelector('.time-bar').classList.add('hidden');
+    document.querySelector('.next-player-btn').classList.add('hidden');
+    document.querySelector('.after-game-controls').classList.remove('hidden');
   }
 
   function displayAttackPromptMessage(playerName: string): void {
-    document.querySelector('.status-message').innerHTML = `${playerName}, it's your turn to shoot the salvo!`;
+    document.querySelector(
+      '.status-message',
+    ).innerHTML = `${playerName}, it's your turn to shoot the salvo!`;
   }
 
   function displayMissedAttackMessage(playerName: string): void {
@@ -298,7 +303,9 @@ export default function () {
   }
 
   function displayDoubleShotMessage(playerName: string): void {
-    document.querySelector('.status-message').innerHTML = `${playerName}, you cannot shoot the same cell twice!`;
+    document.querySelector(
+      '.status-message',
+    ).innerHTML = `${playerName}, you cannot shoot the same cell twice!`;
   }
 
   function displayHitMessage(playerName: string): void {
@@ -311,6 +318,18 @@ export default function () {
 
   function displayGameOverMessage(playerName: string): void {
     document.querySelector('.status-message').innerHTML = `Game is over, ${playerName} won!`;
+  }
+
+  function displaySurrenderMessage(playerName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playerName} surrendered!`;
+  }
+
+  function displayTimeOutMessage(playName: string): void {
+    document.querySelector('.status-message').innerHTML = `${playName} ran out of time!`;
+  }
+
+  function displayPausedMessage(): void {
+    document.querySelector('.status-message').innerHTML = 'Game is paused.';
   }
 
   function drawAllShips(ships: ShipMap, containerClass: string): void {
@@ -373,12 +392,15 @@ export default function () {
     }
   }
 
-  function updateRound(): void {
-    DOMVars.roundCount += 1;
-    document.querySelector('.game-timer').children[0].innerHTML = `Round ${DOMVars.roundCount}`;
+  function displayMutedIcon(): void {
+    document.querySelector('.icon-unmuted').classList.add('icon-muted');
+    document.querySelector('.icon-unmuted').classList.remove('icon-unmuted');
   }
 
-  function resetTimeBar(): void {}
+  function displayUnmutedIcon(): void {
+    document.querySelector('.icon-muted').classList.add('icon-unmuted');
+    document.querySelector('.icon-muted').classList.remove('icon-muted');
+  }
 
   function eraseSelectionOfShip(coords: Coordinate[]) {
     for (let i = 0; i < coords.length; i += 1) {
@@ -396,14 +418,9 @@ export default function () {
     }
   }
 
-  function handleAgainstComputerSwitch(): void {
-    DOMVars.againstComputer = !DOMVars.againstComputer;
-  }
-
   function handleTimeLimitSettings(newTimeLimit: 5 | 10 | 15): void {
-    DOMVars.timeLimit = newTimeLimit;
     document.querySelector('#timeLimitSettingsButton').innerHTML = `${String(
-      DOMVars.timeLimit,
+      newTimeLimit,
     )} seconds`;
   }
 
@@ -425,13 +442,13 @@ export default function () {
   function drawMissedAttack(attack: Coordinate, containerClass: string): void {
     document
       .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
-      ?.classList.add('text-gray-500', 'icon-cross');
+      ?.classList.add('text-gray-500', 'icon-cross', 'text-6xl');
   }
 
   function drawHitAttack(attack: Coordinate, containerClass: string): void {
     document
       .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
-      .classList.add('text-red-500', 'icon-cross');
+      .classList.add('text-red-500', 'icon-cross', 'text-6xl');
   }
 
   function resetSelectedShip(): void {
@@ -471,36 +488,128 @@ export default function () {
     return [Number(token.charAt(1)), Number(token.charAt(3))];
   }
 
-  function loadGameMenuScene(): void {
-    document.body.children[1].remove();
+  function playMissedSound(): void {
+    const missedAudio = new Audio('../src/assets/audio/plop.wav');
+    missedAudio.addEventListener('canplaythrough', (event) => {
+      missedAudio.play();
+    });
+  }
+
+  function playHitSound(): void {
+    const hitAudio = new Audio('../src/assets/audio/cannon_shot.mov');
+    hitAudio.addEventListener('canplaythrough', (event) => {
+      hitAudio.play();
+    });
+  }
+
+  function drawUpdatedTick(newX: number): void {
+    const tickElement = document.querySelector('.tick');
+    (<HTMLElement>tickElement).style.transform = `translateX(${newX}%)`;
+  }
+
+  function resetTick(): void {
+    const tickElement = document.querySelector('.tick');
+    (<HTMLElement>tickElement).style.transform = 'translateX(-100%)';
+  }
+
+  async function loadGameMenuScene(): Promise<any> {
+    // Animation
+    if (document.body.children[0] !== undefined) {
+      document.body.children[0].classList.add('opacity-0');
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          document.body.children[0].classList.remove('opacity-0');
+          document.body.children[0].remove();
+          resolve('');
+        }, 1000);
+      });
+    }
+
     document.body.insertBefore(
       DOMNodes.gameMenuScene.cloneNode(true),
       document.body.lastElementChild,
     );
+
+    // Animation
+    document.body.querySelector('.game-menu').classList.add('opacity-0');
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        document.body.querySelector('.game-menu').classList.remove('opacity-0');
+        resolve('');
+      }, 1000);
+    });
   }
 
-  function loadCountDownScene(): void {
-    document.body.children[1].remove();
+  async function loadCountDownScene(count: number): Promise<any> {
+    // Animation
+    if (document.body.children[0] !== undefined) {
+      document.body.children[0].classList.add('opacity-0');
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          document.body.children[0].classList.remove('opacity-0');
+          document.body.children[0].remove();
+          resolve('');
+        }, 1000);
+      });
+    }
+
     document.body.insertBefore(
       DOMNodes.countDownScene.cloneNode(true),
       document.body.lastElementChild,
     );
+    document.querySelector('.count-down').children[0].innerHTML = `${count}`;
+
+    // Animation
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('');
+      }, 1000);
+    });
   }
 
-  function loadGameSetupScene(ships?: ShipMap): void {
-    document.body.children[1].remove();
+  async function loadGameSetupScene(playerName: string, ships?: ShipMap): Promise<any> {
+    // Animation
+    if (document.body.children[0] !== undefined) {
+      document.body.children[0].classList.add('opacity-0');
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          document.body.children[0].classList.remove('opacity-0');
+          document.body.children[0].remove();
+          resolve('');
+        }, 1000);
+      });
+    }
 
     const clone = DOMNodes.gameSetupScene.cloneNode(true);
     const cloneBoard = DOMNodes.boardTemplate.cloneNode(true);
     clone.childNodes[3].appendChild(cloneBoard);
     document.body.insertBefore(clone, document.body.lastElementChild);
     document.querySelector('.board-template').classList.add('setup-board');
-
+    document.querySelector('.setup-message').innerHTML = `${playerName} arrange your ships.`;
     drawAllShips(ships, 'setup-board');
+
+    // Animation
+    document.querySelector('.game-setup').classList.add('opacity-0');
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        document.querySelector('.game-setup').classList.remove('opacity-0');
+        resolve('');
+      }, 1000);
+    });
   }
 
-  function loadGamePlayScene(ships?: ShipMap): void {
-    document.body.children[1].remove();
+  async function loadGamePlayScene(ships?: ShipMap): Promise<any> {
+    // Animation
+    if (document.body.children[0] !== undefined) {
+      document.body.children[0].classList.add('opacity-0');
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          document.body.children[0].classList.remove('opacity-0');
+          document.body.children[0].remove();
+          resolve('');
+        }, 1000);
+      });
+    }
 
     const clone = DOMNodes.gamePlayScene.cloneNode(true);
     document.body.insertBefore(clone, document.body.lastElementChild);
@@ -518,12 +627,19 @@ export default function () {
       );
     }
 
-    startClock();
-    startRoundCount();
+    // Animation
+    document.querySelector('.game-play').classList.add('opacity-0');
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        document.querySelector('.game-play').classList.remove('opacity-0');
+        resolve('');
+      }, 1000);
+    });
   }
 
   function initNodes() {
     DOMNodes.gameMenuScene = <Element>document.querySelector('.game-menu');
+    DOMNodes.gameMenuScene.remove();
 
     DOMNodes.countDownScene = <Element>document.querySelector('.count-down');
     DOMNodes.countDownScene.remove();
@@ -544,12 +660,17 @@ export default function () {
       // # Game-menu elements
 
       if (source.className.startsWith('play-button')) {
-        // TODO: transition animation
-        controller.start(DOMVars.againstComputer);
-      }
-
-      if (source.id.startsWith('playerModeSwitch')) {
-        handleAgainstComputerSwitch();
+        const playerMode = (<HTMLInputElement>document.querySelector('#playerModeSwitch'))?.checked;
+        const timeLimitSettingsBtn = document.querySelector('#timeLimitSettingsButton');
+        let timeLimit: 5 | 10 | 15;
+        if (timeLimitSettingsBtn.innerHTML.search('15') !== -1) {
+          timeLimit = 15;
+        } else if (timeLimitSettingsBtn.innerHTML.search('10') !== -1) {
+          timeLimit = 10;
+        } else {
+          timeLimit = 5;
+        }
+        controller.startGame(playerMode, timeLimit);
       }
 
       if (source.classList.contains('time-limit-option')) {
@@ -590,22 +711,6 @@ export default function () {
         event.stopPropagation();
       }
 
-      if (source.id === 'game-menu-button') {
-        loadGameMenuScene();
-      }
-
-      if (source.id === 'count-down-button') {
-        loadCountDownScene();
-      }
-
-      if (source.id === 'setup-button') {
-        loadGameSetupScene();
-      }
-
-      if (source.id === 'game-play-button') {
-        loadGamePlayScene();
-      }
-
       if (source.classList.contains('icon-rotation')) {
         controller.transformShipRequested(DOMVars.selectedShip, DOMVars.selectedCoord);
       }
@@ -615,25 +720,38 @@ export default function () {
       }
 
       if (source.classList.contains('icon-pause')) {
-        pauseClock();
-        source.classList.remove('icon-pause');
-        source.classList.add('icon-resume');
+        controller.pause();
       } else if (source.classList.contains('icon-resume')) {
-        resumeClock();
-        source.classList.remove('icon-resume');
-        source.classList.add('icon-pause');
+        controller.resume();
+      }
+
+      if (source.classList.contains('icon-surrender-flag')) {
+        controller.surrender();
       }
 
       if (
         source.parentElement.classList.contains('right-board')
         && source.classList.contains('clicked')
-        && !DOMVars.isPaused
       ) {
         controller.attackRequested(extractCoordsFromClass(source), true);
       }
 
       if (source.classList.contains('next-player-btn')) {
         controller.nextRound();
+      }
+
+      if (source.classList.contains('replay-btn')) {
+        controller.replay();
+      }
+
+      if (source.classList.contains('main-menu-btn')) {
+        controller.mainMenu();
+      }
+
+      if (source.classList.contains('icon-muted')) {
+        controller.unmute();
+      } else if (source.classList.contains('icon-unmuted')) {
+        controller.mute();
       }
     });
 
@@ -650,10 +768,6 @@ export default function () {
   }
 
   function initVars() {
-    DOMVars.timeLimit = 5;
-    DOMVars.againstComputer = (<HTMLInputElement>(
-      document.querySelector('#playerModeSwitch')
-    ))?.checked;
     DOMVars.selectedCoord = [0, 0];
     DOMVars.drag = false;
   }
@@ -661,13 +775,16 @@ export default function () {
   function init(Controller: Controller) {
     initListeners();
     initNodes();
+    loadGameMenuScene();
     initVars();
     controller = Controller;
   }
 
   return {
     init,
+    loadGameMenuScene,
     loadGameSetupScene,
+    loadCountDownScene,
     loadGamePlayScene,
     drawShip,
     drawSelectionOfShip,
@@ -677,7 +794,15 @@ export default function () {
     eraseSelectionOfCoordinate,
     drawMissedAttack,
     drawHitAttack,
-    displayTimebar,
+    updateClock,
+    resetClock,
+    updateRoundCount,
+    resetRoundCount,
+    displayPauseButton,
+    displayResumeButton,
+    displayMutedIcon,
+    displayUnmutedIcon,
+    displayTimeBar,
     displayNextPlayerButton,
     displayAfterGameControls,
     displayAttackPromptMessage,
@@ -686,13 +811,16 @@ export default function () {
     displayHitMessage,
     displaySunkMessage,
     displayGameOverMessage,
-    updateRound,
+    displaySurrenderMessage,
+    displayTimeOutMessage,
+    displayPausedMessage,
+    drawUpdatedTick,
+    playMissedSound,
+    playHitSound,
+    resetTick,
     redrawBoards,
     resetSelectedShip,
     setSelectedCoord,
     setSelectedShip,
-    startClock,
-    resumeClock,
-    stopClock,
   };
 }

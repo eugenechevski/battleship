@@ -61,9 +61,7 @@
 .icon-rotation:before { content: '\e804'; } /* '' */
 .icon-surrender-flag:before { content: '\e805'; } /* '' */
 .icon-right-arrow:before { content: '\e806'; } /* '' */
-.icon-volume-off:before { content: '\e807'; } /* '' */
 .icon-resume:before { content: '\e808'; } /* '' */
-.icon-volume-low:before { content: '\e809'; } /* '' */
-.icon-sound:before { content: '\e80a'; } /* '' */
+.icon-muted:before { content: '\e807'; } /* '' */
+.icon-unmuted:before { content: '\e809'; } /* '' */
 .icon-cross:before { content: '\e80b'; } /* '' */
-.icon-dummy-move:before { content: '\f111'; } /* '' */

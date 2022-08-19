@@ -17,6 +17,14 @@ export default function () {
 
   function addLastAttack(lastAttack: Coordinate): void {
     coordOfLastAttack.push(lastAttack);
+    coordOfLastAttack.sort((coord1, coord2) => {
+      // Horizontal
+      if (coord1[0] === coord2[0]) {
+        return coord1[1] - coord2[1];
+      }
+
+      return coord1[0] - coord2[0];
+    });
   }
 
   function resetLastAttacks(): void {
@@ -234,40 +242,21 @@ export default function () {
 
     // Horizontal possible moves
     if (firstMove[0] === lastMove[0]) {
-      let left: Coordinate = [firstMove[0], firstMove[1]];
-      let right: Coordinate = [lastMove[0], lastMove[1]];
-
-      // The first move is on the right of the left move
-      if (firstMove[1] - lastMove[1] > 0) {
-        left = [lastMove[0], lastMove[1]];
-        right = [firstMove[0], firstMove[1]];
+      if (isValidLeft(firstMove)) {
+        potentialMoves.push([firstMove[0], firstMove[1] - 1]);
       }
 
-      if (isValidLeft(left)) {
-        potentialMoves.push([left[0], left[1] - 1]);
-      }
-
-      if (isValidRight(right)) {
-        potentialMoves.push([right[0], right[1] + 1]);
+      if (isValidRight(lastMove)) {
+        potentialMoves.push([lastMove[0], lastMove[1] + 1]);
       }
       // Vertical possible moves
     } else if (firstMove[1] === lastMove[1]) {
-      // The last move is higher than the first move
-      let top: Coordinate = [firstMove[0], firstMove[1]];
-      let bottom: Coordinate = [lastMove[0], lastMove[1]];
-
-      // The first move is lower than the last move
-      if (firstMove[0] - lastMove[0] > 0) {
-        top = [lastMove[0], lastMove[1]];
-        bottom = [firstMove[0], firstMove[1]];
+      if (isValidTop(firstMove)) {
+        potentialMoves.push([firstMove[0] - 1, firstMove[1]]);
       }
 
-      if (isValidTop(top)) {
-        potentialMoves.push([top[0] - 1, top[1]]);
-      }
-
-      if (isValidBottom(bottom)) {
-        potentialMoves.push([bottom[0] + 1, top[1]]);
+      if (isValidBottom(lastMove)) {
+        potentialMoves.push([lastMove[0] + 1, lastMove[1]]);
       }
     }
 

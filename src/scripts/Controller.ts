@@ -1,17 +1,74 @@
+/* eslint-disable no-loop-func */
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-use-before-define */
 import Player from './Player';
 import Renderer from './Renderer';
 
 export default function Controller() {
   const renderer = Renderer();
+  let attackTimeLimit: 5 | 10 | 15;
+  let gameMode: boolean;
+  let isMuted: boolean;
   let isPlaying: boolean;
   let currentPlayer: Player;
   let nextPlayer: Player;
   let doubleSetup: boolean;
   let cycles: number;
+  let clock: number;
+  let clockInterval: NodeJS.Timer;
+  let roundCount: number;
+  let savedOffset: number;
+  let startTime: number;
+  let timerInterval: NodeJS.Timer;
 
   function init(self: Controller) {
     renderer.init(self);
+  }
+
+  function setPlayers(againstComputer: boolean): void {
+    currentPlayer = Player('Player 1', false);
+    nextPlayer = Player(!againstComputer ? 'Player 2' : 'Computer', againstComputer);
+  }
+
+  function startClock(savedClock: number): void {
+    if (clockInterval !== undefined) {
+      clearInterval(clockInterval);
+    }
+
+    clock = savedClock;
+    clockInterval = setInterval(() => {
+      if (!isPlaying) {
+        return;
+      }
+
+      clock += 1;
+      renderer.updateClock(clock);
+    }, 1000);
+  }
+
+  function startRoundCount(): void {
+    cycles = 0;
+    roundCount = 1;
+  }
+
+  function startTimer(offset: number): void {
+    if (timerInterval !== undefined) {
+      clearInterval(timerInterval);
+    }
+
+    startTime = Date.now() - offset;
+    timerInterval = setInterval(() => {
+      if (!isPlaying) {
+        return;
+      }
+
+      const timeElapsed = Date.now() - startTime;
+
+      if (timeElapsed / 1000 >= attackTimeLimit) {
+        timeout();
+      }
+      renderer.drawUpdatedTick(timeElapsed * (100 / attackTimeLimit / 1000));
+    }, 1);
   }
 
   function changePlayers(): void {
@@ -20,32 +77,129 @@ export default function Controller() {
     nextPlayer = player;
   }
 
-  function start(againstComputer: boolean): void {
-    cycles = 0;
-    isPlaying = true;
-    currentPlayer = Player('Player 1', false);
-    nextPlayer = Player(!againstComputer ? 'Player 2' : 'Computer', againstComputer);
+  function startGame(againstComputer: boolean, timeLimit: 5 | 10 | 15): void {
+    gameMode = againstComputer;
+    attackTimeLimit = timeLimit;
+    setPlayers(againstComputer);
     doubleSetup = !againstComputer;
-    renderer.loadGameSetupScene(currentPlayer.board.ships);
+    renderer.loadGameSetupScene(currentPlayer.getName(), currentPlayer.board.ships);
   }
 
-  function setupComplete(): void {
+  async function setupComplete(): Promise<any> {
     if (doubleSetup) {
       changePlayers();
-      renderer.loadGameSetupScene(currentPlayer.board.ships);
+      renderer.loadGameSetupScene(currentPlayer.getName(), currentPlayer.board.ships);
       renderer.resetSelectedShip();
       doubleSetup = false;
     } else {
-      renderer.loadGamePlayScene(currentPlayer.board.ships);
+      if (!nextPlayer.isComputer) {
+        changePlayers();
+      }
+
+      await renderer.loadCountDownScene(1);
+      await renderer.loadCountDownScene(2);
+      await renderer.loadCountDownScene(3);
+      await renderer.loadGamePlayScene(currentPlayer.board.ships);
+
+      renderer.displayAttackPromptMessage(currentPlayer.getName());
+      isPlaying = true;
+      startClock(0);
+      startRoundCount();
+      startTimer(0);
+    }
+  }
+
+  function mute(): void {
+    isMuted = true;
+    renderer.displayMutedIcon();
+  }
+
+  function unmute(): void {
+    isMuted = false;
+    renderer.displayUnmutedIcon();
+  }
+
+  function replay(): void {
+    isPlaying = true;
+    setPlayers(gameMode);
+    startTimer(0);
+    startClock(0);
+    startRoundCount();
+    renderer.redrawBoards(
+      currentPlayer.board.ships,
+      currentPlayer.board.getGrid(),
+      nextPlayer.board.ships,
+      nextPlayer.board.getGrid(),
+    );
+    renderer.displayAttackPromptMessage(currentPlayer.getName());
+    renderer.displayTimeBar();
+    renderer.updateClock(clock);
+    renderer.updateRoundCount(roundCount);
+  }
+
+  async function mainMenu(): Promise<any> {
+    await renderer.loadGameMenuScene();
+  }
+
+  function pause(): void {
+    if (isPlaying) {
+      isPlaying = false;
+      savedOffset = Date.now() - startTime;
+      clearInterval(timerInterval);
+      clearInterval(clockInterval);
+      renderer.displayResumeButton();
+      renderer.displayPausedMessage();
+    }
+  }
+
+  function resume(): void {
+    if (!isPlaying) {
+      isPlaying = true;
+      startTimer(savedOffset);
+      startClock(clock);
+      renderer.displayPauseButton();
     }
   }
 
   function surrender(): void {
     isPlaying = false;
+    clearInterval(timerInterval);
+    clearInterval(clockInterval);
+    renderer.displayAfterGameControls();
+    renderer.displaySurrenderMessage(currentPlayer.getName());
   }
 
-  function timeout(): void {
-    // TODO
+  async function timeout(): Promise<any> {
+    clearInterval(timerInterval);
+    renderer.resetTick();
+    renderer.displayTimeOutMessage(currentPlayer.getName());
+    changePlayers();
+    if (!currentPlayer.isComputer) {
+      isPlaying = false;
+      renderer.displayNextPlayerButton();
+    } else {
+      // Delay the message
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          renderer.displayAttackPromptMessage(currentPlayer.getName());
+          resolve('');
+        }, 1000);
+      });
+
+      // Delay the input from computer
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          startTimer(0);
+          attackRequested(currentPlayer.board.generateAttack(), false);
+          resolve('');
+        }, 2000);
+      });
+    }
+  }
+
+  // TODO
+  function switchBoardView(): void {
+    
   }
 
   function getSelectedShip(shipAlias: string): Ship {
@@ -104,7 +258,8 @@ export default function Controller() {
   function updateCycle(): void {
     cycles += 1;
     if (cycles % 2 === 0) {
-      renderer.updateRound();
+      roundCount += 1;
+      renderer.updateRoundCount(roundCount);
     }
   }
 
@@ -116,13 +271,17 @@ export default function Controller() {
       nextPlayer.board.ships,
       nextPlayer.board.getGrid(),
     );
-    renderer.displayTimebar();
+    renderer.displayTimeBar();
     renderer.displayAttackPromptMessage(currentPlayer.getName());
-
+    startTimer(0);
+    startClock(clock);
   }
 
   async function playerMissed(attack: Coordinate): Promise<any> {
     renderer.displayMissedAttackMessage(currentPlayer.getName());
+    if (!isMuted) {
+      renderer.playMissedSound();
+    }
 
     // Draw the missed attack
     if (currentPlayer.isComputer) {
@@ -134,6 +293,9 @@ export default function Controller() {
 
     changePlayers();
     updateCycle();
+    renderer.resetTick();
+    clearInterval(timerInterval);
+    clearInterval(clockInterval);
 
     // Reset the state for the next input
     if (currentPlayer.isComputer) {
@@ -148,17 +310,22 @@ export default function Controller() {
       // Delay the input from the computer
       await new Promise((resolve) => {
         setTimeout(() => {
+          startClock(clock);
+          startTimer(0);
           attackRequested(currentPlayer.board.generateAttack(), false);
           resolve('');
         }, 1000);
       });
-    } else if (!nextPlayer.isComputer) {// both players are humans
+    } else if (!nextPlayer.isComputer) {
+      // both players are humans
       renderer.displayNextPlayerButton();
       isPlaying = false;
     } else {
       // Delay the prompt message after the computer player missed
       await new Promise((resolve) => {
         setTimeout(() => {
+          startClock(clock);
+          startTimer(0);
           renderer.displayAttackPromptMessage(currentPlayer.getName());
           resolve('');
         }, 2000);
@@ -167,7 +334,13 @@ export default function Controller() {
   }
 
   async function playerHit(attack: Coordinate): Promise<any> {
+    if (!isMuted) {
+      renderer.playHitSound();
+    }
     renderer.displayHitMessage(currentPlayer.getName());
+    renderer.resetTick();
+    clearInterval(timerInterval);
+    clearInterval(clockInterval);
 
     // Update the view and the state
     if (currentPlayer.isComputer) {
@@ -181,17 +354,27 @@ export default function Controller() {
       // Delay the input from the computer
       await new Promise((resolve) => {
         setTimeout(() => {
+          startTimer(0);
+          startClock(clock);
           attackRequested(currentPlayer.board.generateAttack(), false);
           resolve('');
         }, 2000);
       });
     } else {
+      startTimer(0);
+      startClock(clock);
       renderer.drawHitAttack(attack, 'right-board');
     }
   }
 
   async function playerSunk(attack: Coordinate): Promise<any> {
+    if (!isMuted) {
+      renderer.playHitSound();
+    }
     renderer.displaySunkMessage(currentPlayer.getName());
+    renderer.resetTick();
+    clearInterval(timerInterval);
+    clearInterval(clockInterval);
 
     // Obtain the ship
     const ship: Ship = nextPlayer.board.getGrid()[attack[0]][attack[1]];
@@ -221,7 +404,6 @@ export default function Controller() {
       await new Promise((resolve) => {
         setTimeout(() => {
           isPlaying = false;
-          renderer.stopClock();
           renderer.displayAfterGameControls();
           renderer.displayGameOverMessage(currentPlayer.getName());
           resolve('');
@@ -235,10 +417,15 @@ export default function Controller() {
       // Delay the input
       await new Promise((resolve) => {
         setTimeout(() => {
+          startTimer(0);
+          startClock(clock);
           attackRequested(currentPlayer.board.generateAttack(), false);
           resolve('');
         }, 2000);
       });
+    } else {
+      startTimer(0);
+      startClock(clock);
     }
   }
 
@@ -269,7 +456,15 @@ export default function Controller() {
 
   return {
     init,
-    start,
+    startGame,
+    replay,
+    mainMenu,
+    mute,
+    unmute,
+    pause,
+    resume,
+    surrender,
+    timeout,
     attackRequested,
     getSelectedShip,
     transformShipRequested,
