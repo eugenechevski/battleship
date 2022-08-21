@@ -265,13 +265,13 @@ export default function () {
   }
 
   function displayPauseButton(): void {
-    document.querySelector('.icon-resume').classList.add('icon-pause');
-    document.querySelector('.icon-resume').classList.remove('icon-resume');
+    document.querySelector('.icon-resume')?.classList.add('icon-pause');
+    document.querySelector('.icon-resume')?.classList.remove('icon-resume');
   }
 
   function displayResumeButton(): void {
-    document.querySelector('.icon-pause').classList.add('icon-resume');
-    document.querySelector('.icon-pause').classList.remove('icon-pause');
+    document.querySelector('.icon-pause')?.classList.add('icon-resume');
+    document.querySelector('.icon-pause')?.classList.remove('icon-pause');
   }
 
   function displayTimeBar(): void {
@@ -442,13 +442,13 @@ export default function () {
   function drawMissedAttack(attack: Coordinate, containerClass: string): void {
     document
       .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
-      ?.classList.add('text-gray-500', 'icon-cross', 'text-6xl');
+      ?.classList.add('missed-cell', 'icon-cross');
   }
 
   function drawHitAttack(attack: Coordinate, containerClass: string): void {
     document
       .querySelector(`.${containerClass} .R${attack[0]}C${attack[1]}`)
-      .classList.add('text-red-500', 'icon-cross', 'text-6xl');
+      .classList.add('hit-cell', 'icon-cross');
   }
 
   function resetSelectedShip(): void {
@@ -486,6 +486,36 @@ export default function () {
     }
 
     return [Number(token.charAt(1)), Number(token.charAt(3))];
+  }
+
+  function changeBoardView(): void {
+    if (DOMVars.displayedBoard === undefined) {
+      DOMVars.displayedBoard = document.querySelector('.left-board');
+    }
+
+    // Put one node in the 'displayed' container and the other in the 'hidden'
+    if (DOMVars.displayedBoard.classList.contains('left-board')) {
+      DOMVars.displayedBoard.remove();
+      const rightBoardCopy = document.querySelector('.right-board');
+      rightBoardCopy.remove();
+
+      document.querySelector('.game-play').children[1].children[0].append(rightBoardCopy);
+      document.querySelector('.game-play').children[1].children[2].append(DOMVars.displayedBoard);
+
+      DOMVars.displayedBoard = rightBoardCopy;
+    } else if (DOMVars.displayedBoard.classList.contains('right-board')) {
+      DOMVars.displayedBoard.remove();
+      const leftBoardCopy = document.querySelector('.left-board');
+      leftBoardCopy.remove();
+
+      document.querySelector('.game-play').children[1].children[0].append(leftBoardCopy);
+      document.querySelector('.game-play').children[1].children[2].append(DOMVars.displayedBoard);
+
+      DOMVars.displayedBoard = leftBoardCopy;
+    }
+
+    // Rotate the arrow
+    document.querySelector('.icon-right-arrow').classList.toggle('rotate-180');
   }
 
   function playMissedSound(): void {
@@ -752,6 +782,10 @@ export default function () {
         controller.unmute();
       } else if (source.classList.contains('icon-unmuted')) {
         controller.mute();
+      }
+
+      if (source.classList.contains('icon-right-arrow')) {
+        changeBoardView();
       }
     });
 

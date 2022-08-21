@@ -15,6 +15,14 @@
   .selected-ship {
     @apply bg-gray-300;
   }
+
+  .hit-cell {
+    @apply text-red-500 lg:text-5xl
+  }
+
+  .missed-cell {
+    @apply text-gray-500 lg:text-4xl
+  }
 }
 
 .cell {

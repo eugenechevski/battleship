@@ -50,7 +50,7 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            Choose time limit per attack (default 5 seconds)
+            Time limit per attack (default 5 seconds)
             <svg
               aria-hidden="true"
               focusable="false"
@@ -100,7 +100,7 @@
     <!-- Game setup -->
     <div class="game-setup flex flex-col h-screen transition-opacity">
       <div class="basis-3/12 flex justify-center items-center">
-        <span class="setup-message font-bold text-3xl xs:text-4xl lg:text-6xl"></span>
+        <span class="setup-message font-bold text-2xl xs:text-4xl lg:text-6xl"></span>
       </div>
       <div class="basis-6/12 flex justify-center items-center"></div>
       <div class="basis-3/12 flex justify-center items-center">
@@ -127,21 +127,21 @@
       class="game-play flex flex-col justify-center items-center h-screen transition-opacity duration-500"
     >
       <div
-        class="basis-2/12 flex justify-center items-center w-full text-2xl lg:text-5xl"
+        class="basis-2/12 flex justify-center items-center w-full text-xl xs:text-2xl lg:text-5xl"
       >
         <span class="status-message"></span>
       </div>
       <div class="basis-8/12 relative flex flex-col sm:flex-row justify-center items-center w-full">
         <div class="basis-5/12"></div>
         <div
-          class="game-timer flex flex-col basis-1/12 justify-center items-center w-full h-full text-lg md:text-xl lg:text-3xl"
+          class="game-timer flex flex-col basis-1/12 justify-center items-center w-full h-full mt-10 sm:mt-0 text-lg md:text-xl lg:text-3xl"
         >
           <span>Round 1</span>
           <span>00:00</span>
         </div>
         <div class="basis-5/12 hidden sm:block"></div>
         <!-- Arrow for smaller screens -->
-        <button id="switch-board-button" class="icon-right-arrow settings-btn mr-2 xs:mr-4 absolute top-1/2 right-0 block sm:hidden"></button>
+        <button class="icon-right-arrow settings-btn mr-2 xs:mr-4 absolute top-1/2 right-0 block sm:hidden transition-transform"></button>
       </div>
       <div
         class="basis-2/12 flex items-center justify-end w-full"

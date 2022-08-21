@@ -10,6 +10,7 @@ export default function Controller() {
   let gameMode: boolean;
   let isMuted: boolean;
   let isPlaying: boolean;
+  let isPaused: boolean;
   let currentPlayer: Player;
   let nextPlayer: Player;
   let doubleSetup: boolean;
@@ -37,7 +38,7 @@ export default function Controller() {
 
     clock = savedClock;
     clockInterval = setInterval(() => {
-      if (!isPlaying) {
+      if (isPaused || !isPlaying) {
         return;
       }
 
@@ -58,7 +59,7 @@ export default function Controller() {
 
     startTime = Date.now() - offset;
     timerInterval = setInterval(() => {
-      if (!isPlaying) {
+      if (isPaused || !isPlaying) {
         return;
       }
 
@@ -78,6 +79,9 @@ export default function Controller() {
   }
 
   function startGame(againstComputer: boolean, timeLimit: 5 | 10 | 15): void {
+    isPlaying = true;
+    isMuted = false;
+    isPaused = false;
     gameMode = againstComputer;
     attackTimeLimit = timeLimit;
     setPlayers(againstComputer);
@@ -121,6 +125,7 @@ export default function Controller() {
 
   function replay(): void {
     isPlaying = true;
+    isPaused = false;
     setPlayers(gameMode);
     startTimer(0);
     startClock(0);
@@ -135,6 +140,7 @@ export default function Controller() {
     renderer.displayTimeBar();
     renderer.updateClock(clock);
     renderer.updateRoundCount(roundCount);
+    renderer.displayPauseButton();
   }
 
   async function mainMenu(): Promise<any> {
@@ -142,8 +148,8 @@ export default function Controller() {
   }
 
   function pause(): void {
-    if (isPlaying) {
-      isPlaying = false;
+    if (isPlaying && !isPaused && !currentPlayer.isComputer) {
+      isPaused = true;
       savedOffset = Date.now() - startTime;
       clearInterval(timerInterval);
       clearInterval(clockInterval);
@@ -153,8 +159,8 @@ export default function Controller() {
   }
 
   function resume(): void {
-    if (!isPlaying) {
-      isPlaying = true;
+    if (isPlaying && isPaused) {
+      isPaused = false;
       startTimer(savedOffset);
       startClock(clock);
       renderer.displayPauseButton();
@@ -162,14 +168,20 @@ export default function Controller() {
   }
 
   function surrender(): void {
-    isPlaying = false;
-    clearInterval(timerInterval);
-    clearInterval(clockInterval);
-    renderer.displayAfterGameControls();
-    renderer.displaySurrenderMessage(currentPlayer.getName());
+    if (isPlaying) {
+      isPlaying = false;
+      clearInterval(timerInterval);
+      clearInterval(clockInterval);
+      renderer.displayAfterGameControls();
+      renderer.displaySurrenderMessage(currentPlayer.getName());
+    }
   }
 
   async function timeout(): Promise<any> {
+    if (isPaused || !isPlaying) {
+      return;
+    }
+
     clearInterval(timerInterval);
     renderer.resetTick();
     renderer.displayTimeOutMessage(currentPlayer.getName());
@@ -195,11 +207,6 @@ export default function Controller() {
         }, 2000);
       });
     }
-  }
-
-  // TODO
-  function switchBoardView(): void {
-    
   }
 
   function getSelectedShip(shipAlias: string): Ship {
@@ -278,6 +285,10 @@ export default function Controller() {
   }
 
   async function playerMissed(attack: Coordinate): Promise<any> {
+    if (isPaused || !isPlaying) {
+      return;
+    }
+
     renderer.displayMissedAttackMessage(currentPlayer.getName());
     if (!isMuted) {
       renderer.playMissedSound();
@@ -334,6 +345,10 @@ export default function Controller() {
   }
 
   async function playerHit(attack: Coordinate): Promise<any> {
+    if (isPaused || !isPlaying) {
+      return;
+    }
+
     if (!isMuted) {
       renderer.playHitSound();
     }
@@ -368,6 +383,10 @@ export default function Controller() {
   }
 
   async function playerSunk(attack: Coordinate): Promise<any> {
+    if (isPaused || !isPlaying) {
+      return;
+    }
+
     if (!isMuted) {
       renderer.playHitSound();
     }
@@ -437,7 +456,7 @@ export default function Controller() {
    * @param isPlayer - the flag tells where the input is coming from
    */
   function attackRequested(attack: Coordinate, isPlayer: boolean): void {
-    if (!isPlaying || currentPlayer.isComputer !== !isPlayer) {
+    if (isPaused || !isPlaying || currentPlayer.isComputer !== !isPlayer) {
       return;
     }
 
