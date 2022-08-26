@@ -4,6 +4,8 @@ import ShipDrawing from './view-control/ShipDrawing';
 import ScenesLoaders from './view-control/ScenesLoaders';
 import Displays from './view-control/Displays';
 
+const missedSound = require('src/assets/audio/cannon_shot.mov');
+const hitSound = require('src/assets/audio/plop.wav');
 
 export default function () {
   let controller: Controller;
@@ -129,14 +131,14 @@ export default function () {
   }
 
   function playMissedSound(): void {
-    const missedAudio = new Audio('../src/assets/audio/plop.wav');
+    const missedAudio = new Audio(missedSound);
     missedAudio.addEventListener('canplaythrough', (event) => {
       missedAudio.play();
     });
   }
 
   function playHitSound(): void {
-    const hitAudio = new Audio('../src/assets/audio/cannon_shot.mov');
+    const hitAudio = new Audio(hitSound);
     hitAudio.addEventListener('canplaythrough', (event) => {
       hitAudio.play();
     });

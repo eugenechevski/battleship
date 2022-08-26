@@ -1,5 +1,13 @@
 { 
-  "include": ["./src/scripts/**/*.ts", "./src/scripts/*.ts"],
-  "extends": "./node_modules/@tsconfig/recommended/tsconfig.json"
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ES6",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+  },
 }
 

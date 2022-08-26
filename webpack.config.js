@@ -26,7 +26,7 @@ module.exports = {
         use: ['html-loader'],
       },
       {
-        test: /\.(jpe?g|svg|png|gif|ico|eot|ttf|woff2?)(\?v=\d+\.\d+\.\d+)?$/i,
+        test: /\.(jpe?g|svg|png|gif|ico|eot|ttf|woff2?|wav|mov)(\?v=\d+\.\d+\.\d+)?$/i,
         type: 'asset/resource',
       },
       {
@@ -49,6 +49,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.d.ts', '.js'],
+    alias: {
+      src: path.resolve(__dirname, 'src/'),
+    },
   },
   plugins: [
     new HtmlWebpackPlugin({
