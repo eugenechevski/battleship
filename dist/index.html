@@ -11,10 +11,12 @@
       rel="stylesheet"
     />
     <title>Battleship</title>
-  <script defer src="main.js"></script></head>
+  <link rel="icon" href="favicon.ico"><script defer src="main.js"></script></head>
   <body class="font-main relative select-none">
     <!-- Game menu -->
-    <div class="game-menu flex flex-col justify-start items-center h-screen transition-opacity duration-500">
+    <div
+      class="game-menu flex flex-col justify-start items-center h-screen transition-opacity duration-500"
+    >
       <div
         class="text-center basis-1/2 text-6xl font-bold flex justify-center items-center"
       >
@@ -100,25 +102,33 @@
     <!-- Game setup -->
     <div class="game-setup flex flex-col h-screen transition-opacity">
       <div class="basis-3/12 flex justify-center items-center">
-        <span class="setup-message font-bold text-2xl xs:text-4xl lg:text-6xl"></span>
+        <span
+          class="setup-message font-bold text-2xl xs:text-4xl lg:text-6xl"
+        ></span>
       </div>
       <div class="basis-6/12 flex justify-center items-center"></div>
       <div class="basis-3/12 flex justify-center items-center">
-        <div class="basis-3/4 xs:basis-2/3 md:basis-1/3 flex justify-end items-center">
+        <div
+          class="basis-3/4 xs:basis-2/3 md:basis-1/3 flex justify-end items-center"
+        >
           <div
             class="done-button basis-1/3 border-2 border-black rounded-full text-center text-white bg-blue-500 text-4xl lg:text-5xl font-bold cursor-pointer"
           >
             Done
           </div>
           <div class="basis-1/3">
-            <div class="settings-btn text-white icon-rotation ml-5 md:hidden hidden"></div>
+            <div
+              class="settings-btn text-white icon-rotation ml-5 md:hidden hidden"
+            ></div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Countdown -->
-    <div class="count-down flex justify-center items-center border h-screen transition-opacity">
+    <div
+      class="count-down flex justify-center items-center border h-screen transition-opacity"
+    >
       <span class="font-bold text-9xl"></span>
     </div>
 
@@ -131,7 +141,9 @@
       >
         <span class="status-message"></span>
       </div>
-      <div class="basis-8/12 relative flex flex-col sm:flex-row justify-center items-center w-full">
+      <div
+        class="basis-8/12 relative flex flex-col sm:flex-row justify-center items-center w-full"
+      >
         <div class="basis-5/12"></div>
         <div
           class="game-timer flex flex-col basis-1/12 justify-center items-center w-full h-full mt-10 sm:mt-0 text-lg md:text-xl lg:text-3xl"
@@ -141,11 +153,11 @@
         </div>
         <div class="basis-5/12 hidden sm:block"></div>
         <!-- Arrow for smaller screens -->
-        <button class="icon-right-arrow settings-btn mr-2 xs:mr-4 absolute top-1/2 right-0 block sm:hidden transition-transform"></button>
+        <button
+          class="icon-right-arrow settings-btn mr-2 xs:mr-4 absolute top-1/2 right-0 block sm:hidden transition-transform"
+        ></button>
       </div>
-      <div
-        class="basis-2/12 flex items-center justify-end w-full"
-      >
+      <div class="basis-2/12 flex items-center justify-end w-full">
         <div
           class="basis-2/3 sm:basis-1/3 flex items-center justify-center h-full"
         >
@@ -153,7 +165,9 @@
           <div
             class="time-bar relative border-4 border-black bg-blue-500 basis-3/4 h-1/2 overflow-hidden"
           >
-            <div class="tick top-0 left-0 absolute w-full h-full bg-white -translate-x-full"></div>
+            <div
+              class="tick top-0 left-0 absolute w-full h-full bg-white -translate-x-full"
+            ></div>
           </div>
           <!-- Next player button -->
           <button
@@ -192,19 +206,13 @@
               class="dropdown-menu absolute hidden z-50 list-none border-none"
               aria-labelledby="settingsButton"
             >
-              <li
-                class="mb-1 icon-surrender-flag settings-btn"
-              >
+              <li class="mb-1 icon-surrender-flag settings-btn">
                 <a class="dropdown-item" href="#"></a>
               </li>
-              <li
-                class="mb-1 icon-pause settings-btn"
-              >
+              <li class="mb-1 icon-pause settings-btn">
                 <a class="dropdown-item" href="#"></a>
               </li>
-              <li
-                class="mb-1 icon-unmuted settings-btn"
-              >
+              <li class="mb-1 icon-unmuted settings-btn">
                 <a class="dropdown-item" href="#"></a>
               </li>
             </ul>
@@ -214,9 +222,7 @@
     </div>
 
     <!-- Board template -->
-    <div
-      class="board-template gap-0 columns-12 m-auto select-none"
-    >
+    <div class="board-template gap-0 columns-12 m-auto select-none">
       <div class="cell"></div>
       <div class="cell">1</div>
       <div class="cell">2</div>
@@ -260,106 +266,250 @@
         class="cell clicked border-l-4 border-l-black border-b-4 border-b-black border-r-2 border-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">B</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">C</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">D</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">E</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">F</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">G</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">H</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
       <div class="cell border-b-4 border-black">I</div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
-      <div class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
+      <div
+        class="cell clicked border-b-2 border-b-gray-500 border-r-2 border-r-gray-500"
+      ></div>
       <div
         class="cell clicked border-b-4 border-b-black border-r-2 border-r-gray-500"
       ></div>
@@ -391,7 +541,9 @@
       <div
         class="cell clicked border-r-4 border-r-black border-b-2 border-b-gray-500"
       ></div>
-      <div class="cell clicked border-r-4 border-r-black border-b-4 border-b-black"></div>
+      <div
+        class="cell clicked border-r-4 border-r-black border-b-4 border-b-black"
+      ></div>
       <div class="cell"></div>
       <div class="cell"></div>
       <div class="cell"></div>

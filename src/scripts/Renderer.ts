@@ -4,8 +4,8 @@ import ShipDrawing from './view-control/ShipDrawing';
 import ScenesLoaders from './view-control/ScenesLoaders';
 import Displays from './view-control/Displays';
 
-const missedSound = require('src/assets/audio/cannon_shot.mov');
-const hitSound = require('src/assets/audio/plop.wav');
+const missedSound = require('src/assets/audio/plop.wav');
+const hitSound = require('src/assets/audio/cannon_shot.mov');
 
 export default function () {
   let controller: Controller;

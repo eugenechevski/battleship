@@ -14,6 +14,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
+    clean: true,
   },
   module: {
     rules: [
@@ -57,6 +58,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       filename: './index.html',
       template: './src/index.html',
+      favicon: './src/assets/png/favicon.ico',
     }),
     new webpack.WatchIgnorePlugin({
       paths: [/\.js$/, /\.d\.ts(\.map)?$/],

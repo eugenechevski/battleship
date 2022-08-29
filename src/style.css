@@ -31,8 +31,8 @@
   align-items: center;
 }
 
-.cell.clicked {
-  cursor: pointer;
+.right-board .cell.clicked {
+  cursor: url(src/assets/png/aim.png) 0 0, crosshair;
 }
 
 .cell.clicked:hover {
