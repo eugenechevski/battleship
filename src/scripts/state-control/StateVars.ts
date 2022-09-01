@@ -1,3 +1,9 @@
+/* eslint-disable no-undef */
+/* eslint-disable import/no-mutable-exports */
+
+/**
+ * A container for all variables that are used by the 'Controller' module.
+ */
 export namespace StateVars {
   export let attackTimeLimit: 5 | 10 | 15;
   export let gameMode: boolean;

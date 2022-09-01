@@ -1,20 +1,33 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-undef */
 /**
  * The module stores the internal view of the enemy's board.
  * It also provides the backend for generating random attacks for a computer player.
  */
-export default function () {
+export default function (): EnemyBoardView {
   const enemyGridMap = createMapOfEnemyGrid();
   const possibleAttacks = createPossibleAttacks();
   const coordOfLastAttack: Coordinate[] = [];
 
-  function getEnemyGridMap(): { [index: number]: boolean | Ship } {
+  /**
+   * @returns - The map of the enemy's board
+   */
+  function getEnemyGridMap(): GridMap {
     return enemyGridMap;
   }
 
+  /**
+   * @returns - the history of successful attacks
+   */
   function getCoordOfLastAttack(): Coordinate[] {
     return coordOfLastAttack;
   }
 
+  /**
+   * Adds the last successful attack to the history.
+   *
+   * @param lastAttack - the last successful attack
+   */
   function addLastAttack(lastAttack: Coordinate): void {
     coordOfLastAttack.push(lastAttack);
     coordOfLastAttack.sort((coord1, coord2) => {
@@ -27,12 +40,20 @@ export default function () {
     });
   }
 
+  /**
+   * Cleans up the history of last attacks.
+   */
   function resetLastAttacks(): void {
     while (coordOfLastAttack.length !== 0) {
       coordOfLastAttack.pop();
     }
   }
 
+  /**
+   * Creates a fresh map of the enemy's board used for validation of potential attacks.
+   *
+   * @returns A fresh map of the enemy's board
+   */
   function createMapOfEnemyGrid(): GridMap {
     const enemyMap: { [index: number]: boolean | Ship } = {};
     for (let row = 0; row < 10; row += 1) {
@@ -44,6 +65,12 @@ export default function () {
     return enemyMap;
   }
 
+  /**
+   * Creates a fresh set of possible attacks that can be produced on the enemy's board.
+   * The attacks are stored in one-dimensional format.
+   *
+   * @returns A fresh set of possible attacks
+   */
   function createPossibleAttacks(): Set<number> {
     const attacks = new Set<number>();
     for (let row = 0; row < 10; row += 1) {
@@ -128,6 +155,11 @@ export default function () {
     return <Coordinate>move;
   }
 
+  /**
+   * Update the map of potentially valid attacks that can be produced after the last shot missed.
+   *
+   * @param attack - last attack
+   */
   function markAsMissed(attack: Coordinate): void {
     const row = attack[0];
     const col = attack[1];
@@ -135,17 +167,6 @@ export default function () {
     const keyAttack = row * 10 + col;
     if (keyAttack in enemyGridMap) {
       enemyGridMap[keyAttack] = false;
-      possibleAttacks.delete(keyAttack);
-    }
-  }
-
-  function markAsHit(attack: Coordinate, enemyShip: Ship): void {
-    const row = attack[0];
-    const col = attack[1];
-
-    const keyAttack = row * 10 + col;
-    if (keyAttack in enemyGridMap) {
-      enemyGridMap[keyAttack] = enemyShip;
       possibleAttacks.delete(keyAttack);
     }
   }
@@ -186,6 +207,23 @@ export default function () {
     markAsMissed([lastCoord[0] + 1, lastCoord[1] - 1]);
     markAsMissed([lastCoord[0] + 1, lastCoord[1]]);
     markAsMissed([lastCoord[0] + 1, lastCoord[1] + 1]);
+  }
+
+  /**
+   * Updates the map of potentially valid attacks after an enemy's ship was hit.
+   *
+   * @param attack - last attack
+   * @param enemyShip - enemy's ship that was hit
+   */
+  function markAsHit(attack: Coordinate, enemyShip: Ship): void {
+    const row = attack[0];
+    const col = attack[1];
+
+    const keyAttack = row * 10 + col;
+    if (keyAttack in enemyGridMap) {
+      enemyGridMap[keyAttack] = enemyShip;
+      possibleAttacks.delete(keyAttack);
+    }
   }
 
   /**

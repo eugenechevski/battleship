@@ -1,9 +1,16 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-param-reassign */
 
 /**
- * The module generates random coordinates for all ships.
+ * The module generates valid random coordinates for all ships.
+ * The idea is to create maps of all possible positions of all ships and to randomly choose
+ * coordinates for each ship. To choose all valid positions, the code eliminates all positions
+ * that cannot be chosen after it generated a position for a ship.
  */
-export default function () {
+export default function (): PositionGenerator {
+  /**
+   * Removes a position in a ship's map.
+   */
   function eliminatePossibility(
     row: number,
     col: number,
@@ -14,6 +21,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes some of the horizontal possible positions in a ship's map.
+   */
   function eliminateAroundHorizontally(
     generatedCoords: number[],
     shipPossibilities: ShipPossibilitiesMap,
@@ -31,6 +41,9 @@ export default function () {
     eliminatePossibility(row + 1, lastCol + 1, shipPossibilities);
   }
 
+  /**
+   * Removes some of the vertical possible positions in a ship's map.
+   */
   function eliminateAroundVertically(
     generatedCoords: number[],
     shipPossibilities: ShipPossibilitiesMap,
@@ -48,6 +61,12 @@ export default function () {
     eliminatePossibility(lastRow + 1, col + 1, shipPossibilities);
   }
 
+  /**
+   * Removes all possible positions around a ship's generated position in another ship's map.
+   *
+   * @param generatedCoords - a ship's generated coordinates
+   * @param shipPossibilities - another ship's map of possibilities
+   */
   function eliminatePossibilitiesAround(
     generatedCoords: any[],
     shipPossibilities: ShipPossibilitiesMap,
@@ -77,6 +96,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes all possible positions for all ships around a ship's generated position.
+   */
   function eliminatePossibilities(
     generatedCoords: any[],
     possibilities: PossibilitiesMap,
@@ -88,6 +110,9 @@ export default function () {
     eliminatePossibilitiesAround(generatedCoords, possibilities.sizeOfFour, randomOrientation);
   }
 
+  /**
+   * Removes possible horizontal overlapping positions in a given ship's map.
+   */
   function eliminateHorizontalOverlaps(
     row: number,
     col: number,
@@ -102,6 +127,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes possible vertical overlapping positions in a given ship's map.
+   */
   function eliminateVerticalOverlaps(
     row: number,
     col: number,
@@ -116,6 +144,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes horizontal possible coordinates that overlap with the generated coordinates.
+   */
   function eliminateHorizontally(
     row: number,
     col: number,
@@ -165,6 +196,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes vertical possible coordinates that overlap with the generated coordinates.
+   */
   function eliminateVertically(
     row: number,
     col: number,
@@ -214,6 +248,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes all possible coordinates that overlap with the generated coordinates.
+   */
   function eliminateOverlaps(
     generatedCoords: number[],
     possibilities: PossibilitiesMap,
@@ -229,6 +266,9 @@ export default function () {
     }
   }
 
+  /**
+   * Initializes the object that stores all possible positions.
+   */
   function createFreshMap(): PossibilitiesMap {
     const sizeOfOne = {};
     const sizeOfTwo = {};
@@ -260,6 +300,9 @@ export default function () {
     };
   }
 
+  /**
+   * Adds all possible horizontal positions for all ships.
+   */
   function addHorizontalPossibilities(map: PossibilitiesMap): void {
     for (let row = 0; row < 10; row += 1) {
       for (let col = 0; col < 10; col += 1) {
@@ -292,6 +335,9 @@ export default function () {
     }
   }
 
+  /**
+   * Adds all possible vertical positions for all ships.
+   */
   function addVerticalPossibilities(map: PossibilitiesMap): void {
     for (let col = 0; col < 10; col += 1) {
       for (let row = 0; row < 10; row += 1) {
@@ -324,6 +370,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes a single position that cannot be chosen.
+   */
   function clearPosition(row: number, col: number, shipMap: ShipPossibilitiesMap): void {
     if ((shipMap[row][col] as PossibilitiesSets)[0].size === 0) {
       (shipMap[row][col] as PossibilitiesSets).shift();
@@ -338,6 +387,9 @@ export default function () {
     }
   }
 
+  /**
+   * Removes all positions that cannot be chosen.
+   */
   function clearEmptyPositions(map: PossibilitiesMap): void {
     for (let row = 0; row < 10; row += 1) {
       for (let col = 0; col < 10; col += 1) {
@@ -349,6 +401,9 @@ export default function () {
     }
   }
 
+  /**
+   * Creates a map of all initial possible positions for all ships.
+   */
   function createPossibilitiesMap(): PossibilitiesMap {
     const possibilities = createFreshMap();
 
@@ -359,6 +414,12 @@ export default function () {
     return possibilities;
   }
 
+  /**
+   * Fixes the random orientation identifier.
+   *
+   * @param shipMap - a ship's possibilities map
+   * @param position - a generated position
+   */
   function adjustOrientation(shipMap: ShipPossibilitiesMap, position: GeneratedPosition): void {
     if ((<PossibilitiesSets>shipMap[position.randomRow][position.randomCol]).length === 1) {
       // Vertical
@@ -370,6 +431,11 @@ export default function () {
     }
   }
 
+  /**
+   * Removes all rows that are no longer valid to be considered for a random position.
+   *
+   * @param possibilities - map of all possible positions
+   */
   function eliminateRows(possibilities: PossibilitiesMap): void {
     for (let row = 0; row < 10; row += 1) {
       if (
@@ -401,6 +467,12 @@ export default function () {
     }
   }
 
+  /**
+   * Generates a position for a given ship.
+   *
+   * @param shipMap - all possible position for a ship
+   * @returns an object with all the necessary information about a generated position
+   */
   function generatePosition(shipMap: ShipPossibilitiesMap): GeneratedPosition {
     const availRows = Object.keys(shipMap);
     const randomRow = Number(availRows[Math.floor(Math.random() * availRows.length)]);
@@ -427,6 +499,13 @@ export default function () {
     };
   }
 
+  /**
+   * Randomly generates a position for a given ship and updates the map of all possibilities.
+   *
+   * @param possibilities - a map of all ships' maps
+   * @param shipMap - a map of a ship
+   * @param allGeneratedCoords - a container for generated coordinates of ships
+   */
   function randomize(
     possibilities: PossibilitiesMap,
     shipMap: ShipPossibilitiesMap,
@@ -448,6 +527,12 @@ export default function () {
     allGeneratedCoords.push(position.generatedCoords);
   }
 
+  /**
+   * Converts one-dimensional coordinates, ie. 0 - 99, to the two-dimensional format.
+   *
+   * @param allGeneratedCoords - container with all one-dimensional coordinates.
+   * @returns 2D array of coordinates
+   */
   function convertTo2D(allGeneratedCoords: number[][]): Coordinate[][] {
     const coords: Coordinate[][] = [];
 
@@ -464,6 +549,11 @@ export default function () {
     return coords;
   }
 
+  /**
+   * The module's main function that combines all code above to generate a random board.
+   *
+   * @returns - coords of all ships
+   */
   function generateRandomCoords(): Coordinate[][] {
     const allGeneratedCoords: number[][] = [];
     const possibilities = createPossibilitiesMap();

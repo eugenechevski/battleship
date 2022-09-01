@@ -5,11 +5,18 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-undef */
 import Ship from './Ship';
-import Generator from './Generator';
+import PositionGenerator from './PositionGenerator';
 import TransformationValidator from './TransformationValidator';
 import EnemyBoardView from './EnemyBoardView';
 
-export default function () {
+/**
+ * The module represents the internal architecture of a player's board.
+ * It stores all sub-components related to the logic of interacting with a board.
+ */
+export default function (): GameBoard {
+  /**
+   * The board's ships.
+   */
   const ships: ShipMap = {
     AC: Ship('Aircraft Carrier', 5),
     BS: Ship('Battleship', 4),
@@ -19,6 +26,10 @@ export default function () {
     S0: Ship('Submarine 0', 1),
     S1: Ship('Submarine 1', 1),
   };
+
+  /**
+   * The object stores a mapping of ships' full names to its shorter versions (aliases).
+   */
   const tableName: { [shipName: string]: string } = {
     'Aircraft Carrier': 'AC',
     Battleship: 'BS',
@@ -29,18 +40,25 @@ export default function () {
     'Submarine 1': 'S1',
   };
 
-  const grid: Grid = createGrid(Generator().generateRandomCoords());
-  const thisGridMap = createMapOfThisGrid();
+  const grid: Grid = createGrid(PositionGenerator().generateRandomCoords());
+  const thisGridMap = createMapOfGrid();
   const transformValidator = TransformationValidator(thisGridMap);
   const enemyBoardView = EnemyBoardView();
 
   let numberOfShipsAlive = 7;
 
+  /**
+   * Updates a ship's position internally.
+   *
+   * @param target - ship to transform
+   * @param newCoords
+   * @param newOrientation
+   */
   function transformShip(
     target: Ship,
     newCoords: Coordinate[],
-    newOrientation?: 'VERTICAL' | 'HORIZONTAL',
-  ) {
+    newOrientation?: Orientation,
+  ): void {
     // Update the internal state
     if (newOrientation !== undefined) {
       target.setOrientation(newOrientation);
@@ -63,15 +81,11 @@ export default function () {
     return numberOfShipsAlive === 0;
   }
 
-  function getNumberOfShipsAlive(): number {
-    return numberOfShipsAlive;
-  }
-
   function getGrid(): Grid {
     return grid;
   }
 
-  function createMapOfThisGrid(): { [index: number]: boolean | Ship } {
+  function createMapOfGrid(): GridMap {
     const thisMap: { [index: number]: boolean | Ship } = {};
     for (let row = 0; row < 10; row += 1) {
       for (let col = 0; col < 10; col += 1) {
@@ -99,7 +113,8 @@ export default function () {
    * The function produces a new copy of the array that serves as the internal grid
    * of the player's board. It populates the array with ships and boolean's 'true' value
    * where 'true' means the cell was not hit before.
-   * @returns populated grid
+   *
+   * @returns - populated grid
    */
   function createGrid(randomCoords: Coordinate[][]): Grid {
     const freshGrid: Grid = createFreshGrid();
@@ -167,11 +182,6 @@ export default function () {
 
   /**
    * Generates a valid attack based on the current state of the enemy's board.
-   * It uses the internal view of the enemy's board to determine a valid move, and
-   * it accounts the last actions.
-   * The 'notFinished' variable will tell us whether we hit a ship before or not;
-   * its value is set by the 'Controller' module because the module has an access to the
-   * other board.
    * There are 3 cases for generating a move.
    * The first case is when we randomly choosing a valid cell.
    * The second case is when we hit a ship the last time and we need to choose randomly a valid
@@ -191,15 +201,14 @@ export default function () {
   }
 
   return {
-    enemyBoardView,
     ships,
     tableName,
+    enemyBoardView,
+    transformValidator,
+    transformShip,
     receiveAttack,
     generateAttack,
     areSunk,
-    getNumberOfShipsAlive,
     getGrid,
-    transformValidator,
-    transformShip,
   };
 }

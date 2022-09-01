@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
 import { DOMNodes } from './view-control/DOMNodes';
 import { DOMVars } from './view-control/DOMVars';
 import ShipDrawing from './view-control/ShipDrawing';
@@ -7,40 +11,66 @@ import Displays from './view-control/Displays';
 const missedSound = require('src/assets/audio/plop.wav');
 const hitSound = require('src/assets/audio/cannon_shot.mov');
 
-export default function () {
+/**
+ * This is a top-module that exploits other sub-modules in the 'view-control' folder.
+ * It provides methods for managing the UI for the 'Controller' module and it accepts the
+ * input from the user and redirects it to handle to the 'Controller' module.
+ */
+export default function (): Renderer {
   let controller: Controller;
   let shipDrawingAPI: ShipDrawing;
   let scenesLoadersAPI: ScenesLoaders;
   let displaysAPI: Displays;
 
+  /**
+   * Draws a new tick on the time-bar element.
+   */
   function drawUpdatedTick(newX: number): void {
     const tickElement = document.querySelector('.tick');
     (<HTMLElement>tickElement).style.transform = `translateX(${newX}%)`;
   }
 
+  /**
+   * Resets the the time-bar.
+   */
   function resetTick(): void {
     const tickElement = document.querySelector('.tick');
     (<HTMLElement>tickElement).style.transform = 'translateX(-100%)';
   }
 
+  /**
+   * Updates the clock element.
+   */
   function updateClock(clock: number): void {
     document.querySelectorAll('.game-timer span')[1].innerHTML = `${`${Math.floor(
       clock / 60,
     )}`.padStart(2, '0')}:${`${Math.floor(clock % 60)}`.padStart(2, '0')}`;
   }
 
+  /**
+   * Resets the clock element.
+   */
   function resetClock(): void {
     document.querySelectorAll('.game-timer span')[1].innerHTML = '';
   }
 
+  /**
+   * Updates the round-count element.
+   */
   function updateRoundCount(roundCount: number): void {
     document.querySelector('.game-timer').children[0].innerHTML = `Round ${roundCount}`;
   }
 
+  /**
+   * Resets the round count element.
+   */
   function resetRoundCount(): void {
     document.querySelector('.game-timer').children[0].innerHTML = '';
   }
 
+  /**
+   * Resets the boards' elements.
+   */
   function appendFreshBoards(): void {
     const cloneBoard1 = DOMNodes.boardTemplate.cloneNode(true);
     const cloneBoard2 = DOMNodes.boardTemplate.cloneNode(true);
@@ -53,21 +83,33 @@ export default function () {
     boards[1].classList.add('game-play-board', 'right-board');
   }
 
+  /**
+   * Handles the event when the time-limit menu was clicked.
+   */
   function handleTimeLimitSettings(newTimeLimit: 5 | 10 | 15): void {
     document.querySelector('#timeLimitSettingsButton').innerHTML = `${String(
       newTimeLimit,
     )} seconds`;
   }
 
+  /**
+   * Resets the variables that store information on a selected ship and a selected coordinate.
+   */
   function resetSelectedShip(): void {
     DOMVars.selectedCoord = undefined;
     DOMVars.selectedShip = undefined;
   }
 
+  /**
+   * Stores a selected coordinate in a variable.
+   */
   function setSelectedCoord(newCoord: Coordinate): void {
     DOMVars.selectedCoord = newCoord;
   }
 
+  /**
+   * Stores a selected ship in a variable.
+   */
   function setSelectedShip(newShip: Ship): void {
     DOMVars.selectedShip = newShip;
   }
@@ -82,6 +124,9 @@ export default function () {
     }
   }
 
+  /**
+   * Converts an element's class to a coordinate.
+   */
   function extractCoordsFromClass(source: Element): Coordinate {
     let token = '';
     const values = [...source.classList.values()];
@@ -96,6 +141,11 @@ export default function () {
     return [Number(token.charAt(1)), Number(token.charAt(3))];
   }
 
+  /**
+   * Swaps the boards' elements in a container to keep the ability to view both boards on smaller
+   * screens. The feature is only available when the 'arrow' button is clicked which is only visible
+   * before the 'sm' breakpoint.
+   */
   function changeBoardView(): void {
     if (DOMVars.displayedBoard === undefined) {
       DOMVars.displayedBoard = document.querySelector('.left-board');
@@ -126,6 +176,9 @@ export default function () {
     document.querySelector('.icon-right-arrow').classList.toggle('rotate-180');
   }
 
+  /**
+   * Resets the variable that stores the displayed board on smaller screens.
+   */
   function resetDisplayedBoard(): void {
     DOMVars.displayedBoard = undefined;
   }
@@ -281,8 +334,8 @@ export default function () {
     DOMVars.drag = false;
   }
 
-  function init(Controller: Controller) {
-    controller = Controller;
+  function init(ControllerInstance: Controller): void {
+    controller = ControllerInstance;
     this.displaysAPI = Displays();
     this.shipDrawingAPI = ShipDrawing(this);
     this.scenesLoadersAPI = ScenesLoaders(this);

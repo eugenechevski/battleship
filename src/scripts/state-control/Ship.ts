@@ -1,16 +1,20 @@
 /* eslint-disable no-undef */
+
+/**
+ * A factory for creating ship objects.
+ */
 export default function (name: string, shipSize: number): Ship {
   const shipName = name;
   const mapOfCoords: { [coord: number]: boolean } = {};
   let arrCoordinates: Coordinate[] = [];
   let destroyedCells = shipSize;
-  let orientation: 'VERTICAL' | 'HORIZONTAL' | undefined;
+  let orientation: Orientation | undefined;
 
   function getName(): string {
     return shipName;
   }
 
-  function getOrientation(): 'VERTICAL' | 'HORIZONTAL' | undefined {
+  function getOrientation(): Orientation | undefined {
     return orientation;
   }
 
@@ -18,7 +22,7 @@ export default function (name: string, shipSize: number): Ship {
     return arrCoordinates;
   }
 
-  function setOrientation(newOrientation: 'VERTICAL' | 'HORIZONTAL') {
+  function setOrientation(newOrientation: Orientation): void {
     orientation = newOrientation;
   }
 

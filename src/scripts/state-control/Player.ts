@@ -1,8 +1,12 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-undef */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
 import GameBoard from './GameBoard';
 
+/**
+ * A factory for creating a player's object.
+ */
 export default function (name: string, isComputer: boolean): Player {
   const board = GameBoard();
 

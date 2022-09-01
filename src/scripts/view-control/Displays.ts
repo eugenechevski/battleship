@@ -1,4 +1,8 @@
-export default function () {
+/* eslint-disable no-undef */
+/**
+ * The module provides methods used by the 'Renderer' module to display various UI components.
+ */
+export default function (): Displays {
   function displayPauseButton(): void {
     document.querySelector('.icon-resume')?.classList.add('icon-pause');
     document.querySelector('.icon-resume')?.classList.remove('icon-resume');

@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable no-loop-func */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-use-before-define */
@@ -5,13 +8,19 @@ import Renderer from './Renderer';
 import Player from './state-control/Player';
 import { StateVars } from './state-control/StateVars';
 
-export default function Controller() {
+/**
+ * The module orchestrates the flow of the game by receiving inputs and producing outputs.
+ */
+export default function Controller(): Controller {
   const renderer = Renderer();
 
-  function init(self: Controller) {
+  function init(self: Controller): void {
     renderer.init(self);
   }
 
+  /**
+   * Initializes players' objects.
+   */
   function setPlayers(againstComputer: boolean): void {
     StateVars.currentPlayer = Player('Player 1', false);
     StateVars.nextPlayer = Player(!againstComputer ? 'Player 2' : 'Computer', againstComputer);
@@ -38,6 +47,9 @@ export default function Controller() {
     StateVars.roundCount = 1;
   }
 
+  /**
+   * Starts the timer of player's attack.
+   */
   function startTimer(offset: number): void {
     if (StateVars.timerInterval !== undefined) {
       clearInterval(StateVars.timerInterval);
@@ -58,12 +70,18 @@ export default function Controller() {
     }, 1);
   }
 
+  /**
+   * Swaps values of players' objects.
+   */
   function changePlayers(): void {
     const player = StateVars.currentPlayer;
     StateVars.currentPlayer = StateVars.nextPlayer;
     StateVars.nextPlayer = player;
   }
 
+  /**
+   * Starts a new instance of the game with the given parameters.
+   */
   function startGame(againstComputer: boolean, timeLimit: 5 | 10 | 15): void {
     StateVars.isPlaying = true;
     StateVars.isMuted = false;
@@ -79,6 +97,9 @@ export default function Controller() {
     renderer.resetDisplayedBoard();
   }
 
+  /**
+   * Finishes up the setup of the game's instance and loads the countdown and the game-play scenes.
+   */
   async function setupComplete(): Promise<any> {
     if (StateVars.doubleSetup) {
       changePlayers();
@@ -116,6 +137,9 @@ export default function Controller() {
     renderer.displaysAPI.displayUnmutedIcon();
   }
 
+  /**
+   * Resets the game's instance with the same parameters.
+   */
   function replay(): void {
     StateVars.isPlaying = true;
     StateVars.isPaused = false;
@@ -200,11 +224,22 @@ export default function Controller() {
     }
   }
 
+  /**
+   * @param shipAlias - an alias of a ship
+   * @returns a ship's object
+   */
   function getSelectedShip(shipAlias: string): Ship {
     return StateVars.currentPlayer.board.ships[shipAlias];
   }
 
+  /**
+   * Accepts the request from the user to change a ship's position and process it.
+   * @param target - a ship to be transformed
+   * @param src - a source's coordinate
+   * @param dest - a destination's coordinate
+   */
   function transformShipRequested(target: Ship, src: Coordinate, dest?: Coordinate): void {
+    // Translation
     if (dest !== undefined) {
       const result = StateVars.currentPlayer.board.transformValidator.isValidToTranslateShip(
         target,
@@ -230,6 +265,7 @@ export default function Controller() {
         renderer.shipDrawingAPI.drawSelectionOfCoordinate(dest);
       }
     } else {
+      // Rotation
       const result = StateVars.currentPlayer.board.transformValidator.isValidToRotateShip(
         target,
         src,
@@ -256,6 +292,10 @@ export default function Controller() {
     }
   }
 
+  /**
+   * Updates the gaming cycle when a player produces an attack.
+   * The number of rounds gets updated every two cycles.
+   */
   function updateCycle(): void {
     StateVars.cycles += 1;
     if (StateVars.cycles % 2 === 0) {
@@ -264,6 +304,9 @@ export default function Controller() {
     }
   }
 
+  /**
+   * Starts a new round when two players are humans and after the 'next player' button was clicked.
+   */
   function nextRound(): void {
     StateVars.isPlaying = true;
     renderer.shipDrawingAPI.redrawBoards(
@@ -278,6 +321,9 @@ export default function Controller() {
     startClock(StateVars.clock);
   }
 
+  /**
+   * Executes a protocol when a player missed.
+   */
   async function playerMissed(attack: Coordinate): Promise<any> {
     if (StateVars.isPaused || !StateVars.isPlaying) {
       return;
@@ -338,6 +384,9 @@ export default function Controller() {
     }
   }
 
+  /**
+   * Executes a protocol when a player hit an enemy's ship.
+   */
   async function playerHit(attack: Coordinate): Promise<any> {
     if (StateVars.isPaused || !StateVars.isPlaying) {
       return;
@@ -356,7 +405,7 @@ export default function Controller() {
       renderer.shipDrawingAPI.drawHitAttack(attack, 'left-board');
       StateVars.currentPlayer.board.enemyBoardView.markAsHit(
         attack,
-        StateVars.nextPlayer.board.getGrid()[attack[0]][attack[1]],
+        <Ship>StateVars.nextPlayer.board.getGrid()[attack[0]][attack[1]],
       );
       StateVars.currentPlayer.board.enemyBoardView.addLastAttack(attack);
 
@@ -376,6 +425,9 @@ export default function Controller() {
     }
   }
 
+  /**
+   * Executes a protocol when a player sunk an enemy ship.
+   */
   async function playerSunk(attack: Coordinate): Promise<any> {
     if (StateVars.isPaused || !StateVars.isPlaying) {
       return;
@@ -390,7 +442,7 @@ export default function Controller() {
     clearInterval(StateVars.clockInterval);
 
     // Obtain the ship
-    const ship: Ship = StateVars.nextPlayer.board.getGrid()[attack[0]][attack[1]];
+    const ship = <Ship>StateVars.nextPlayer.board.getGrid()[attack[0]][attack[1]];
 
     // Update the view and the internal state
     if (StateVars.currentPlayer.isComputer) {

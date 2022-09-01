@@ -1,4 +1,9 @@
-export default function (renderer: Renderer) {
+/* eslint-disable no-undef */
+/**
+ * The module provides methods for the 'Renderer' module
+ * to load different scenes and display it asynchronously.
+ */
+export default function (renderer: Renderer): ScenesLoaders {
   async function loadGameMenuScene(): Promise<any> {
     // Animation
     if (document.body.children[0] !== undefined) {

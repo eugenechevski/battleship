@@ -1,4 +1,8 @@
-export default function (renderer: Renderer) {
+/* eslint-disable no-undef */
+/**
+ * The module provides methods for drawing ships and display it on a webpage.
+ */
+export default function (renderer: Renderer): ShipDrawing {
   function eraseTopBorder(coords: Coordinate, containerClass: string) {
     if (coords[0] > 0) {
       const cell = document.querySelector(`.${containerClass} .R${coords[0] - 1}C${coords[1]}`);
@@ -208,8 +212,8 @@ export default function (renderer: Renderer) {
   function eraseShip(
     coords: Coordinate[],
     containerClass: string,
-    orientation?: 'VERTICAL' | 'HORIZONTAL',
-  ) {
+    orientation?: Orientation,
+  ): void {
     if (orientation !== undefined && orientation === 'VERTICAL') {
       eraseVertical(coords, containerClass);
     } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
@@ -226,9 +230,9 @@ export default function (renderer: Renderer) {
     coords: Coordinate[],
     containerClass: string,
     color: string,
-    orientation?: 'VERTICAL' | 'HORIZONTAL',
+    orientation?: Orientation,
     shipAlias?: string,
-  ) {
+  ): void {
     if (orientation !== undefined && orientation === 'VERTICAL') {
       drawVertical(coords, containerClass, color, shipAlias);
     } else if (orientation !== undefined && orientation === 'HORIZONTAL') {
@@ -268,12 +272,7 @@ export default function (renderer: Renderer) {
       const ship: Ship = enemyShips[shipAliases[i]];
 
       if (ship.isSunk()) {
-        drawShip(
-          ship.getArrayCoordinates(),
-          'right-board',
-          'red-500',
-          ship.getOrientation(),
-        );
+        drawShip(ship.getArrayCoordinates(), 'right-board', 'red-500', ship.getOrientation());
       }
     }
 
@@ -292,13 +291,13 @@ export default function (renderer: Renderer) {
 
         // Hits
 
-        if (typeof grid[row][col] !== 'boolean' && <Ship>grid[row][col].wasHit([row, col])) {
+        if (typeof grid[row][col] !== 'boolean' && (<Ship>grid[row][col]).wasHit([row, col])) {
           drawHitAttack([row, col], 'left-board');
         }
 
         if (
           typeof enemyGrid[row][col] !== 'boolean'
-          && <Ship>enemyGrid[row][col].wasHit([row, col])
+          && (<Ship>enemyGrid[row][col]).wasHit([row, col])
         ) {
           drawHitAttack([row, col], 'right-board');
         }
@@ -306,7 +305,7 @@ export default function (renderer: Renderer) {
     }
   }
 
-  function eraseSelectionOfShip(coords: Coordinate[]) {
+  function eraseSelectionOfShip(coords: Coordinate[]): void {
     for (let i = 0; i < coords.length; i += 1) {
       document
         .querySelector(`.setup-board .R${coords[i][0]}C${coords[i][1]}`)
@@ -314,7 +313,7 @@ export default function (renderer: Renderer) {
     }
   }
 
-  function drawSelectionOfShip(coords: Coordinate[]) {
+  function drawSelectionOfShip(coords: Coordinate[]): void {
     for (let i = 0; i < coords.length; i += 1) {
       document
         .querySelector(`.setup-board .R${coords[i][0]}C${coords[i][1]}`)

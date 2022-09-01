@@ -1,11 +1,17 @@
+/* eslint-disable no-undef */
 /**
- * The module is responsible for validating requests
+ * The module for validating requests
  * to transform a ship during the game-setup scene.
  *
  * @param thisGridMap - one dimensional representation of the grid.
  * @returns two functions that validate translations and rotations.
  */
-export default function (thisGridMap: { [index: number]: boolean | Ship }) {
+export default function (thisGridMap: {
+  [index: number]: boolean | Ship;
+}): TransformationValidator {
+  /**
+   * Validates a given ship on the left of a given position.
+   */
   function areThereAnyShipsOnLeft(coord: Coordinate, target: Ship): boolean {
     const row = coord[0];
     const col = coord[1];
@@ -24,6 +30,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     );
   }
 
+  /**
+   * Validates a given ship on the right of a given position.
+   */
   function areThereAnyShipsOnRight(coord: Coordinate, target: Ship): boolean {
     const row = coord[0];
     const col = coord[1];
@@ -44,6 +53,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     );
   }
 
+  /**
+   * Validates a given ship on the top of a given position.
+   */
   function areThereAnyShipsOnTop(coord: Coordinate, target: Ship): boolean {
     const row = coord[0];
     const col = coord[1];
@@ -60,6 +72,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     );
   }
 
+  /**
+   * Validates a given ship on the bottom of a given position.
+   */
   function areThereAnyShipsOnBottom(coord: Coordinate, target: Ship): boolean {
     const row = coord[0];
     const col = coord[1];
@@ -80,6 +95,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     );
   }
 
+  /**
+   * @returns a coordinate's index in a ship's array of coordinates.
+   */
   function getShipCellIndex(shipCoords: Coordinate[], coord: Coordinate): number {
     let srcIndex = -1;
     for (let i = 0; i < shipCoords.length; i += 1) {
@@ -92,9 +110,12 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return srcIndex;
   }
 
+  /**
+   * Validates if a requested position of a ship is in boundaries.
+   */
   function isInBoundaries(
     dest: Coordinate,
-    orientation: 'HORIZONTAL' | 'VERTICAL',
+    orientation: Orientation,
     shipSize: number,
     srcIndex: number,
   ): boolean {
@@ -110,6 +131,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return true;
   }
 
+  /**
+   * Validates a requested position horizontally.
+   */
   function isValidHorizontalTranslation(
     target: Ship,
     dest: Coordinate,
@@ -141,8 +165,11 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return projectedCoords;
   }
 
+  /**
+   * Validates a requested position vertically.
+   */
   function isValidVerticalTranslation(
-    target: ShipPossibilitiesMap,
+    target: Ship,
     dest: Coordinate,
     srcIndex: number,
     shipSize: number,
@@ -172,6 +199,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return projectedCoords;
   }
 
+  /**
+   * Validates a sub-marine's a requested translation.
+   */
   function isValidSubmarineTranslation(target: Ship, dest: Coordinate): false | Coordinate[] {
     if (
       areThereAnyShipsOnTop([dest[0], dest[1]], target)
@@ -185,9 +215,12 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return [dest];
   }
 
+  /**
+   * Redirects the validation process to one of the three validators above.
+   */
   function isValidTranslation(
     target: Ship,
-    orientation: 'HORIZONTAL' | 'VERTICAL',
+    orientation: Orientation,
     dest: Coordinate,
     srcIndex: number,
     shipSize: number,
@@ -202,6 +235,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return isValidSubmarineTranslation(target, dest);
   }
 
+  /**
+   * Validates a generated rotation vertically.
+   */
   function isValidVerticalRotation(coords: Coordinate[], target: Ship): boolean {
     if (
       areThereAnyShipsOnLeft(coords[0], target)
@@ -224,6 +260,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return true;
   }
 
+  /**
+   * Validates a generated rotation horizontally.
+   */
   function isValidHorizontalRotation(coords: Coordinate[], target: Ship): boolean {
     if (
       areThereAnyShipsOnTop(coords[0], target)
@@ -246,10 +285,13 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return true;
   }
 
+  /**
+   * Redirects the validation process to the validators above.
+   */
   function isValidRotation(
     coords: Coordinate[],
     target: Ship,
-    projectedOrientation: 'VERTICAL' | 'HORIZONTAL',
+    projectedOrientation: Orientation,
   ): boolean {
     if (coords[0][0] < 0 || coords[0][0] > 9 || coords[0][1] < 0 || coords[0][1] > 9) {
       return false;
@@ -266,6 +308,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return true;
   }
 
+  /**
+   * Generates vertical positions and validates them.
+   */
   function isValidToRotateVertically(target: Ship, src: Coordinate): false | Coordinate[] {
     const projectionUpward = [];
     const projectionDownward = [];
@@ -288,6 +333,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return false;
   }
 
+  /**
+   * Generates horizontal positions and validates them.
+   */
   function isValidToRotateHorizontally(target: Ship, src: Coordinate): false | Coordinate[] {
     const projectionLeftward = [];
     const projectionRightward = [];
@@ -310,6 +358,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
     return false;
   }
 
+  /**
+   * Accepts the request for rotation at a given position.
+   */
   function isValidToRotateShip(target: Ship, src: Coordinate): false | Coordinate[] {
     const shipCoords = target.getArrayCoordinates();
     const srcIndex = getShipCellIndex(shipCoords, src);
@@ -323,6 +374,9 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
       : isValidToRotateHorizontally(target, src);
   }
 
+  /**
+   * Accepts the request for translation at a given position to a given destination.
+   */
   function isValidToTranslateShip(
     target: Ship,
     src: Coordinate,
@@ -341,7 +395,7 @@ export default function (thisGridMap: { [index: number]: boolean | Ship }) {
       return false;
     }
 
-    // See whether the projected position is valid
+    // See whether the projected position
     return isValidTranslation(target, target.getOrientation(), dest, srcIndex, target.shipSize);
   }
 
