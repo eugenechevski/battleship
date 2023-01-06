@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cherokee-rose/battleship.git"
+    "url": "git+https://github.com/eugenechevski/battleship.git"
   },
   "keywords": [
     "battleship",
@@ -18,9 +18,9 @@
   "author": "Yauheni Khvashcheuski",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/cherokee-rose/battleship/issues"
+    "url": "https://github.com/eugenechevski/battleship/issues"
   },
-  "homepage": "https://github.com/cherokee-rose/battleship#readme",
+  "homepage": "https://github.com/eugenechevski/battleship#readme",
   "devDependencies": {
     "@babel/core": "^7.17.5",
     "@babel/plugin-transform-runtime": "^7.17.0",
